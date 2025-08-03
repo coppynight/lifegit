@@ -23,20 +23,20 @@
     - 实现基本的数据迁移策略
     - _Requirements: 4.1, 4.2, 4.3_
 
-- [ ] 3. Repository层实现
-  - [ ] 3.1 实现分支仓库
+- [x] 3. Repository层实现
+  - [x] 3.1 实现分支仓库
     - 创建BranchRepository协议和SwiftDataBranchRepository实现
     - 实现分支的CRUD操作
     - 添加分支查询和筛选功能
     - _Requirements: 1.1, 1.2, 1.3_
 
-  - [ ] 3.2 实现任务计划仓库
+  - [x] 3.2 实现任务计划仓库
     - 创建TaskPlanRepository协议和SwiftDataTaskPlanRepository实现
     - 实现任务计划的保存、删除和查询功能
     - 支持任务项的批量操作
     - _Requirements: 5.1, 5.2, 5.3_
 
-  - [ ] 3.3 实现提交仓库
+  - [x] 3.3 实现提交仓库
     - 创建CommitRepository协议和SwiftDataCommitRepository实现
     - 实现提交记录的CRUD操作
     - 支持按分支和类型筛选提交
