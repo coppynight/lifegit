@@ -1,73 +1,125 @@
-# 人生Git (Life Git)
+# LifeGit - iOS App
 
-一款创新的iOS个人目标管理应用，将Git版本控制的概念应用到人生目标管理中。
+A modern iOS application using a **workspace + SPM package** architecture for clean separation between app shell and feature code.
 
-## 项目概述
+## AI Assistant Rules Files
 
-人生Git将用户的人生视为一个完整的Git项目：
-- **主干分支 (Master Branch)**: 代表用户的人生主线，记录版本升级
-- **目标分支 (Goal Branches)**: 每个目标创建独立分支进行管理
-- **提交记录 (Commits)**: 记录日常进展和成就
-- **合并操作 (Merge)**: 完成的目标合并回主干，实现人生版本升级
+This template includes **opinionated rules files** for popular AI coding assistants. These files establish coding standards, architectural patterns, and best practices for modern iOS development using the latest APIs and Swift features.
 
-## 核心特性
+### Included Rules Files
+- **Claude Code**: `CLAUDE.md` - Claude Code rules
+- **Cursor**: `.cursor/*.mdc` - Cursor-specific rules
+- **GitHub Copilot**: `.github/copilot-instructions.md` - GitHub Copilot rules
 
-### MVP版本 (v1.0)
-- ✅ 基础分支管理（创建、查看、切换目标分支）
-- ✅ 简单提交系统（文本记录日常进展）
-- ✅ 主干视图（人生时间线和基本统计）
-- ✅ 基础合并功能（目标完成后合并到主干）
-- ✅ 本地数据存储（SwiftData持久化）
-- 🤖 **AI任务计划模块**（使用Deepseek-R1生成结构化任务计划）
+### Customization Options
+These rules files are **starting points** - feel free to:
+- ✅ **Edit them** to match your team's coding standards
+- ✅ **Delete them** if you prefer different approaches
+- ✅ **Add your own** rules for other AI tools
+- ✅ **Update them** as new iOS APIs become available
 
-### 技术栈
-- **平台**: iOS 16.0+ 原生开发
-- **架构**: MVVM + SwiftUI
-- **数据**: SwiftData 本地存储
-- **AI集成**: Deepseek-R1 API
-- **语言**: Swift 5.9+
+### What Makes These Rules Opinionated
+- **No ViewModels**: Embraces pure SwiftUI state management patterns
+- **Swift 6+ Concurrency**: Enforces modern async/await over legacy patterns
+- **Latest APIs**: Recommends iOS 18+ features with optional iOS 26 guidelines
+- **Testing First**: Promotes Swift Testing framework over XCTest
+- **Performance Focus**: Emphasizes @Observable over @Published for better performance
 
-## 项目结构
+**Note for AI assistants**: You MUST read the relevant rules files before making changes to ensure consistency with project standards.
+
+## Project Architecture
 
 ```
-.kiro/
-├── specs/life-git-ios/          # 项目规格文档
-│   ├── requirements.md          # 详细需求文档
-│   ├── design.md               # 技术设计文档
-│   └── tasks.md                # 实现任务分解
-└── steering/                   # AI助手指导规则
-    ├── product.md              # 产品概述
-    ├── tech.md                 # 技术栈说明
-    └── structure.md            # 项目结构规范
+LifeGit/
+├── LifeGit.xcworkspace/              # Open this file in Xcode
+├── LifeGit.xcodeproj/                # App shell project
+├── LifeGit/                          # App target (minimal)
+│   ├── Assets.xcassets/                # App-level assets (icons, colors)
+│   ├── LifeGitApp.swift              # App entry point
+│   └── LifeGit.xctestplan            # Test configuration
+├── LifeGitPackage/                   # 🚀 Primary development area
+│   ├── Package.swift                   # Package configuration
+│   ├── Sources/LifeGitFeature/       # Your feature code
+│   └── Tests/LifeGitFeatureTests/    # Unit tests
+└── LifeGitUITests/                   # UI automation tests
 ```
 
-## 开发进度
+## Key Architecture Points
 
-当前处于**规格设计阶段**，已完成：
-- ✅ 产品需求分析和文档化
-- ✅ 技术架构设计
-- ✅ 详细实现任务分解
-- ✅ 开发规范和指导文档
+### Workspace + SPM Structure
+- **App Shell**: `LifeGit/` contains minimal app lifecycle code
+- **Feature Code**: `LifeGitPackage/Sources/LifeGitFeature/` is where most development happens
+- **Separation**: Business logic lives in the SPM package, app target just imports and displays it
 
-下一步：开始MVP版本的代码实现
+### Buildable Folders (Xcode 16)
+- Files added to the filesystem automatically appear in Xcode
+- No need to manually add files to project targets
+- Reduces project file conflicts in teams
 
-## 核心理念
+## Development Notes
 
-1. **无心理负担**: 鼓励用户积极创建目标分支，不用担心目标太难或太小
-2. **灵活专注**: 用户可以灵活地在分支间切换而不影响其他分支
-3. **成长可视化**: 达成分支目标后合并进主干，意味着获得了新版本的人生
+### Code Organization
+Most development happens in `LifeGitPackage/Sources/LifeGitFeature/` - organize your code as you prefer.
 
-## 成功指标 (MVP)
+### Public API Requirements
+Types exposed to the app target need `public` access:
+```swift
+public struct NewView: View {
+    public init() {}
+    
+    public var body: some View {
+        // Your view code
+    }
+}
+```
 
-- AI任务拆解成功率 > 90%
-- 用户对AI生成任务计划的采用率 > 70%
-- 用户平均每周至少创建3次提交
-- 应用启动时间 < 2秒，AI任务拆解响应时间 < 10秒
+### Adding Dependencies
+Edit `LifeGitPackage/Package.swift` to add SPM dependencies:
+```swift
+dependencies: [
+    .package(url: "https://github.com/example/SomePackage", from: "1.0.0")
+],
+targets: [
+    .target(
+        name: "LifeGitFeature",
+        dependencies: ["SomePackage"]
+    ),
+]
+```
 
-## 许可证
+### Test Structure
+- **Unit Tests**: `LifeGitPackage/Tests/LifeGitFeatureTests/` (Swift Testing framework)
+- **UI Tests**: `LifeGitUITests/` (XCUITest framework)
+- **Test Plan**: `LifeGit.xctestplan` coordinates all tests
 
-MIT License
+## Configuration
 
-## 贡献
+### XCConfig Build Settings
+Build settings are managed through **XCConfig files** in `Config/`:
+- `Config/Shared.xcconfig` - Common settings (bundle ID, versions, deployment target)
+- `Config/Debug.xcconfig` - Debug-specific settings  
+- `Config/Release.xcconfig` - Release-specific settings
+- `Config/Tests.xcconfig` - Test-specific settings
 
-欢迎提交Issue和Pull Request来改进这个项目。
+### Entitlements Management
+App capabilities are managed through a **declarative entitlements file**:
+- `Config/LifeGit.entitlements` - All app entitlements and capabilities
+- AI agents can safely edit this XML file to add HealthKit, CloudKit, Push Notifications, etc.
+- No need to modify complex Xcode project files
+
+### Asset Management
+- **App-Level Assets**: `LifeGit/Assets.xcassets/` (app icon, accent color)
+- **Feature Assets**: Add `Resources/` folder to SPM package if needed
+
+### SPM Package Resources
+To include assets in your feature package:
+```swift
+.target(
+    name: "LifeGitFeature",
+    dependencies: [],
+    resources: [.process("Resources")]
+)
+```
+
+### Generated with XcodeBuildMCP
+This project was scaffolded using [XcodeBuildMCP](https://github.com/cameroncooke/XcodeBuildMCP), which provides tools for AI-assisted iOS development workflows.

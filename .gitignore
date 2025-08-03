@@ -4,17 +4,6 @@
 
 ## User settings
 xcuserdata/
-*.xcodeproj/
-*.xcworkspace/
-build/
-DerivedData/
-*.pbxuser
-*.mode1v3
-*.mode2v3
-*.perspectivev3
-*.xcuserstate
-*.xcscmblueprint
-*.xccheckout
 
 ## Obj-C/Swift specific
 *.hmap
@@ -27,30 +16,6 @@ DerivedData/
 ## Playgrounds
 timeline.xctimeline
 playground.xcworkspace
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Thumbnails
-._*
-
-# Files that might appear in the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
 
 # Swift Package Manager
 #
@@ -65,9 +30,6 @@ Temporary Items
 # .swiftpm
 
 .build/
-Packages/
-Package.pins
-Package.resolved
 
 # CocoaPods
 #
@@ -80,18 +42,12 @@ Package.resolved
 # Add this line if you want to avoid checking in source code from the Xcode workspace
 # *.xcworkspace
 
-Pods/
-
 # Carthage
 #
 # Add this line if you want to avoid checking in source code from Carthage dependencies.
 # Carthage/Checkouts
 
 Carthage/Build/
-
-# Accio dependency management
-Dependencies/
-.accio/
 
 # fastlane
 #
@@ -104,9 +60,3 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
-
-# Code Injection
-iOSInjectionProject/
-
-# Kiro IDE
-.kiro/settings/mcp.json

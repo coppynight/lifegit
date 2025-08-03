@@ -1,0 +1,20 @@
+{
+  "enabled": true,
+  "name": "Auto Git Commit",
+  "description": "Automatically commits all project changes to git repository whenever tasks are completed or significant progress is made",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "LifeGit/**/*.swift",
+      "LifeGit.xcodeproj/**/*",
+      "README.md",
+      "*.md",
+      ".gitignore"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A task has been completed and files have been modified. Please commit all changes to git with an appropriate commit message that describes what was accomplished. Use 'git add .' to stage all changes, then 'git commit -m \"descriptive message\"' to commit the changes. Make sure the commit message is clear and describes the specific task or feature that was completed."
+  }
+}

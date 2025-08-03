@@ -1,0 +1,35 @@
+{
+  "configurations" : [
+    {
+      "id" : "24499A57-8A8C-49DD-9DF6-FD06943246D4",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:LifeGit.xcodeproj",
+      "identifier" : "8B41F6442DEDD0D5001A66F9",
+      "name" : "LifeGit"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:LifeGitPackage",
+        "identifier" : "LifeGitFeatureTests",
+        "name" : "LifeGitFeatureTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:LifeGit.xcodeproj",
+        "identifier" : "8B41F65B2DEDD0D6001A66F9",
+        "name" : "LifeGitUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

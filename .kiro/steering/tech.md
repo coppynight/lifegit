@@ -2,7 +2,7 @@
 
 ## Platform & Requirements
 - **Platform**: iOS native development
-- **Minimum Version**: iOS 16.0+
+- **Minimum Version**: iOS 17.0+
 - **Target Devices**: iPhone全系列 (All iPhone series)
 - **Architecture**: MVVM (Model-View-ViewModel) with SwiftUI
 
@@ -14,7 +14,7 @@
 - **Swift Concurrency**: async/await for AI API calls and data operations
 
 ### Data & Persistence
-- **SwiftData**: Primary data persistence layer (iOS 16+ native ORM)
+- **SwiftData**: Primary data persistence layer (iOS 17+ native ORM)
 - **ModelContainer & ModelContext**: SwiftData configuration for data management
 - **Local Storage**: All data stored locally on device with encryption support
 - **Future**: iCloud sync support planned for v2.0+
