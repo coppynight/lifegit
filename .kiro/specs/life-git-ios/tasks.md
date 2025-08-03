@@ -42,20 +42,20 @@
     - 支持按分支和类型筛选提交
     - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ] 4. Deepseek-R1 AI集成
-  - [ ] 4.1 实现Deepseek-R1 API客户端
+- [x] 4. Deepseek-R1 AI集成
+  - [x] 4.1 实现Deepseek-R1 API客户端
     - 创建DeepseekR1Client类，实现HTTP请求封装
     - 实现API认证和错误处理
     - 添加请求重试机制和超时处理
     - _Requirements: 5.1, 5.4, 5.6_
 
-  - [ ] 4.2 实现任务计划服务
+  - [x] 4.2 实现任务计划服务
     - 创建TaskPlanService类，封装AI任务拆解逻辑
     - 实现prompt工程，优化AI任务生成质量
     - 实现JSON响应解析和数据转换
     - _Requirements: 5.1, 5.2, 5.4_
 
-  - [ ] 4.3 添加AI服务错误处理
+  - [x] 4.3 添加AI服务错误处理
     - 实现网络错误和AI服务错误的优雅处理
     - 添加离线模式支持，允许用户手动创建任务
     - 实现错误重试和用户反馈机制
