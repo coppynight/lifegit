@@ -8,13 +8,17 @@ class Commit {
     var type: CommitType
     var timestamp: Date
     var branchId: UUID
-    var relatedTaskId: UUID?
+    var relatedTaskId: UUID? // 关联的任务项ID（如果有）
     
     @Relationship(inverse: \Branch.commits) var branch: Branch?
     @Relationship(inverse: \User.commits) var user: User?
     
-    init(id: UUID = UUID(), message: String, type: CommitType,
-         timestamp: Date = Date(), branchId: UUID, relatedTaskId: UUID? = nil) {
+    init(id: UUID = UUID(),
+         message: String,
+         type: CommitType,
+         timestamp: Date = Date(),
+         branchId: UUID,
+         relatedTaskId: UUID? = nil) {
         self.id = id
         self.message = message
         self.type = type

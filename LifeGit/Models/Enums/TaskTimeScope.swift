@@ -13,11 +13,11 @@ enum TaskTimeScope: String, CaseIterable, Codable {
         }
     }
     
-    var emoji: String {
+    var shortName: String {
         switch self {
-        case .daily: return "📅"
-        case .weekly: return "📆"
-        case .monthly: return "🗓️"
+        case .daily: return "日"
+        case .weekly: return "周"
+        case .monthly: return "月"
         }
     }
 }

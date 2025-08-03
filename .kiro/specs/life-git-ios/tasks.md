@@ -10,14 +10,14 @@
   - 配置iOS 17.0最低版本要求
   - _Requirements: 6.1, 6.2, 6.3_
 
-- [ ] 2. 核心数据模型实现
-  - [ ] 2.1 创建SwiftData数据模型
+- [x] 2. 核心数据模型实现
+  - [x] 2.1 创建SwiftData数据模型
     - 实现User、Branch、Commit、TaskPlan、TaskItem等核心模型
     - 定义模型间的关系和约束
     - 实现枚举类型（BranchStatus、CommitType、TaskTimeScope等）
     - _Requirements: 4.1, 4.2, 4.3_
 
-  - [ ] 2.2 实现数据持久化配置
+  - [x] 2.2 实现数据持久化配置
     - 配置SwiftData ModelContainer和ModelContext
     - 设置数据模型版本管理
     - 实现基本的数据迁移策略

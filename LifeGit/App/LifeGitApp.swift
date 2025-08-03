@@ -3,10 +3,13 @@ import SwiftData
 
 @main
 struct LifeGitApp: App {
+    @StateObject private var dataManager = DataManager.shared
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(dataManager)
         }
-        .modelContainer(for: [User.self, Branch.self, Commit.self, TaskPlan.self, TaskItem.self])
+        .modelContainer(dataManager.modelContainer)
     }
 }
