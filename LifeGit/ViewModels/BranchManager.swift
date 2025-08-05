@@ -53,10 +53,9 @@ class BranchManager: ObservableObject {
             // Create the branch
             let branch = Branch(
                 name: name,
-                description: description,
-                isMaster: false,
+                branchDescription: description,
                 status: .active,
-                userId: userId
+                isMaster: false
             )
             
             try await branchRepository.create(branch)
@@ -99,10 +98,9 @@ class BranchManager: ObservableObject {
             // Create the branch
             let branch = Branch(
                 name: name,
-                description: description,
-                isMaster: false,
+                branchDescription: description,
                 status: .active,
-                userId: userId
+                isMaster: false
             )
             
             try await branchRepository.create(branch)
@@ -205,7 +203,7 @@ class BranchManager: ObservableObject {
             let newTaskPlan = try await generateTaskPlan(
                 for: branch,
                 goalTitle: branch.name,
-                goalDescription: branch.description,
+                goalDescription: branch.branchDescription,
                 timeframe: nil
             )
             
@@ -251,7 +249,7 @@ class BranchManager: ObservableObject {
             
             // Update branch status to merged (we can add this status later)
             // For now, we'll keep it as completed
-            branch.mergedAt = Date()
+            branch.completedAt = Date()
             try await branchRepository.update(branch)
             
         } catch {
@@ -270,7 +268,6 @@ class BranchManager: ObservableObject {
         
         do {
             branch.status = .abandoned
-            branch.abandonedAt = Date()
             try await branchRepository.update(branch)
             
         } catch {

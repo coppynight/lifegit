@@ -18,13 +18,13 @@ class AppStateManager: ObservableObject {
     @Published var preferredStartupView: StartupView = .intelligent
     @Published var lastActiveDate = Date()
     
-    // MARK: - Private Properties
-    private let modelContext: ModelContext
-    private let branchRepository: BranchRepository
-    private let userDefaults = UserDefaults.standard
+    // MARK: - Internal Properties (for extensions)
+    internal var modelContext: ModelContext?
+    internal var branchRepository: BranchRepository?
+    internal let userDefaults = UserDefaults.standard
     
     // MARK: - Constants
-    private enum UserDefaultsKeys {
+    internal enum UserDefaultsKeys {
         static let isFirstLaunch = "isFirstLaunch"
         static let preferredStartupView = "preferredStartupView"
         static let lastActiveBranchId = "lastActiveBranchId"
@@ -32,11 +32,17 @@ class AppStateManager: ObservableObject {
     }
     
     // MARK: - Initialization
-    init(modelContext: ModelContext) {
+    init() {
+        loadUserPreferences()
+    }
+    
+    func initialize(modelContext: ModelContext) {
         self.modelContext = modelContext
         self.branchRepository = SwiftDataBranchRepository(modelContext: modelContext)
         
-        loadUserPreferences()
+        Task {
+            await loadInitialData()
+        }
     }
     
     // MARK: - Initial Data Loading
@@ -45,6 +51,11 @@ class AppStateManager: ObservableObject {
         defer { isLoading = false }
         
         do {
+            guard let branchRepository = branchRepository else {
+                self.error = DataError.queryFailed("Repository not initialized")
+                return
+            }
+            
             // Check if this is first launch
             isFirstLaunch = !userDefaults.bool(forKey: UserDefaultsKeys.isFirstLaunch)
             
@@ -63,14 +74,15 @@ class AppStateManager: ObservableObject {
     }
     
     /// Setup data for first launch
-    private func setupFirstLaunch() async throws {
+    internal func setupFirstLaunch() async throws {
+        guard let branchRepository = branchRepository else { return }
+        
         // Create master branch
         let masterBranch = Branch(
             name: "人生主线",
-            description: "记录人生的主要历程和成就",
-            isMaster: true,
+            branchDescription: "记录人生的主要历程和成就",
             status: .active,
-            userId: UUID() // In a real app, this would be the actual user ID
+            isMaster: true
         )
         
         try await branchRepository.create(masterBranch)
@@ -86,6 +98,8 @@ class AppStateManager: ObservableObject {
     
     /// Load existing data for returning users
     private func loadExistingData() async throws {
+        guard let branchRepository = branchRepository else { return }
+        
         // Load all branches
         branches = try await branchRepository.findAll()
         
@@ -99,7 +113,7 @@ class AppStateManager: ObservableObject {
         case .lastViewed:
             return try await getLastViewedBranch()
         case .masterBranch:
-            return try await branchRepository.findMasterBranch()
+            return try await branchRepository?.findMasterBranch()
         case .mostActiveBranch:
             return try await getMostActiveBranch()
         case .intelligent:
@@ -109,6 +123,8 @@ class AppStateManager: ObservableObject {
     
     /// Get the last viewed branch
     private func getLastViewedBranch() async throws -> Branch? {
+        guard let branchRepository = branchRepository else { return nil }
+        
         guard let lastBranchIdString = userDefaults.string(forKey: UserDefaultsKeys.lastActiveBranchId),
               let lastBranchId = UUID(uuidString: lastBranchIdString) else {
             return try await branchRepository.findMasterBranch()
@@ -119,15 +135,23 @@ class AppStateManager: ObservableObject {
     
     /// Get the most active branch (most recent commits)
     private func getMostActiveBranch() async throws -> Branch? {
+        guard let branchRepository = branchRepository else { return nil }
+        
         let activeBranches = try await branchRepository.getActiveBranches()
         
         // For now, return the most recently created active branch
         // In a full implementation, this would consider commit frequency
-        return activeBranches.first ?? (try await branchRepository.findMasterBranch())
+        if let firstActive = activeBranches.first {
+            return firstActive
+        } else {
+            return try await branchRepository.findMasterBranch()
+        }
     }
     
     /// Intelligent startup branch selection
-    private func getIntelligentStartupBranch() async throws -> Branch? {
+    internal func getIntelligentStartupBranch() async throws -> Branch? {
+        guard let branchRepository = branchRepository else { return nil }
+        
         // Check if user just completed a goal (show master to celebrate)
         let lastActiveDate = userDefaults.object(forKey: UserDefaultsKeys.lastActiveDate) as? Date ?? Date.distantPast
         let daysSinceLastActive = Calendar.current.dateComponents([.day], from: lastActiveDate, to: Date()).day ?? 0
@@ -149,6 +173,8 @@ class AppStateManager: ObservableObject {
     }
     
     func refreshBranches() async {
+        guard let branchRepository = branchRepository else { return }
+        
         do {
             branches = try await branchRepository.findAll()
         } catch {
@@ -166,6 +192,7 @@ class AppStateManager: ObservableObject {
         // If removed branch was current, switch to master
         if currentBranch?.id == branch.id {
             Task {
+                guard let branchRepository = branchRepository else { return }
                 currentBranch = try await branchRepository.findMasterBranch()
                 saveCurrentBranchId()
             }
@@ -196,13 +223,13 @@ class AppStateManager: ObservableObject {
         }
     }
     
-    private func saveCurrentBranchId() {
+    internal func saveCurrentBranchId() {
         if let currentBranch = currentBranch {
             userDefaults.set(currentBranch.id.uuidString, forKey: UserDefaultsKeys.lastActiveBranchId)
         }
     }
     
-    private func updateLastActiveDate() {
+    internal func updateLastActiveDate() {
         lastActiveDate = Date()
         userDefaults.set(lastActiveDate, forKey: UserDefaultsKeys.lastActiveDate)
     }

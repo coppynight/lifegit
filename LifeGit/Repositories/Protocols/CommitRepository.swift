@@ -73,10 +73,10 @@ protocol CommitRepository {
     func getCommitCount(for branchId: UUID) async throws -> Int
     
     /// Get recent commits (last N commits)
-    /// - Parameter limit: Maximum number of commits to return
+    /// - Parameter count: Maximum number of commits to return
     /// - Returns: Array of recent commits
     /// - Throws: DataError if query fails
-    func getRecentCommits(limit: Int) async throws -> [Commit]
+    func getRecentCommits(count: Int) async throws -> [Commit]
     
     /// Search commits by content
     /// - Parameter searchText: Text to search for in commit messages

@@ -66,8 +66,8 @@ class DataMigrationService {
             let user = try modelContext.fetch(userDescriptor).first!
             let masterBranch = Branch(
                 name: "master",
-                description: "人生主干分支",
-                status: .active,
+                branchDescription: "人生主干分支",
+                status: .master,
                 isMaster: true
             )
             masterBranch.user = user

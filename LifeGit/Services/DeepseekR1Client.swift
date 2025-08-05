@@ -27,7 +27,7 @@ class DeepseekR1Client {
     /// Send a chat completion request to Deepseek-R1
     /// - Parameter request: The chat completion request
     /// - Returns: The chat completion response
-    /// - Throws: DeepseekError for various failure scenarios
+    /// - Throws: DeepseekClientError for various failure scenarios
     func chatCompletion(_ request: ChatCompletionRequest) async throws -> ChatCompletionResponse {
         let url = URL(string: "\(baseURL)/chat/completions")!
         
@@ -39,7 +39,7 @@ class DeepseekR1Client {
         do {
             urlRequest.httpBody = try JSONEncoder().encode(request)
         } catch {
-            throw DeepseekError.encodingFailed("Failed to encode request: \(error.localizedDescription)")
+            throw DeepseekClientError.encodingFailed("Failed to encode request: \(error.localizedDescription)")
         }
         
         return try await performRequestWithRetry(urlRequest)
@@ -54,7 +54,7 @@ class DeepseekR1Client {
                 let (data, response) = try await session.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
-                    throw DeepseekError.invalidResponse("Invalid response type")
+                    throw DeepseekClientError.invalidResponse("Invalid response type")
                 }
                 
                 // Handle HTTP status codes
@@ -62,11 +62,11 @@ class DeepseekR1Client {
                 case 200...299:
                     return try decodeResponse(data)
                 case 400:
-                    throw DeepseekError.badRequest(try decodeErrorResponse(data))
+                    throw DeepseekClientError.badRequest(try decodeErrorResponse(data))
                 case 401:
-                    throw DeepseekError.unauthorized("Invalid API key")
+                    throw DeepseekClientError.unauthorized("Invalid API key")
                 case 403:
-                    throw DeepseekError.forbidden("Access forbidden")
+                    throw DeepseekClientError.forbidden("Access forbidden")
                 case 429:
                     // Rate limit - wait before retry
                     if attempt < maxRetries - 1 {
@@ -74,7 +74,7 @@ class DeepseekR1Client {
                         try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                         continue
                     }
-                    throw DeepseekError.rateLimited("Rate limit exceeded")
+                    throw DeepseekClientError.rateLimited("Rate limit exceeded")
                 case 500...599:
                     // Server error - retry
                     if attempt < maxRetries - 1 {
@@ -82,12 +82,12 @@ class DeepseekR1Client {
                         try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                         continue
                     }
-                    throw DeepseekError.serverError("Server error: \(httpResponse.statusCode)")
+                    throw DeepseekClientError.serverError("Server error: \(httpResponse.statusCode)")
                 default:
-                    throw DeepseekError.httpError("HTTP error: \(httpResponse.statusCode)")
+                    throw DeepseekClientError.httpError("HTTP error: \(httpResponse.statusCode)")
                 }
                 
-            } catch let error as DeepseekError {
+            } catch let error as DeepseekClientError {
                 throw error
             } catch {
                 lastError = error
@@ -99,7 +99,7 @@ class DeepseekR1Client {
             }
         }
         
-        throw DeepseekError.networkError(lastError?.localizedDescription ?? "Network request failed after \(maxRetries) attempts")
+        throw DeepseekClientError.networkError(lastError?.localizedDescription ?? "Network request failed after \(maxRetries) attempts")
     }
     
     /// Decode successful response
@@ -107,7 +107,7 @@ class DeepseekR1Client {
         do {
             return try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
         } catch {
-            throw DeepseekError.decodingFailed("Failed to decode response: \(error.localizedDescription)")
+            throw DeepseekClientError.decodingFailed("Failed to decode response: \(error.localizedDescription)")
         }
     }
     
@@ -224,7 +224,7 @@ struct APIError: Codable {
 // MARK: - Error Types
 
 /// Deepseek API specific errors
-enum DeepseekError: Error, LocalizedError {
+enum DeepseekClientError: Error, LocalizedError {
     case encodingFailed(String)
     case decodingFailed(String)
     case networkError(String)

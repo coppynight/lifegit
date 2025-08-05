@@ -15,7 +15,7 @@ class TaskPlanService {
     ///   - goalDescription: Detailed description of the goal
     ///   - timeframe: Expected timeframe for completion (optional)
     /// - Returns: Generated task plan with structured tasks
-    /// - Throws: TaskPlanError for various failure scenarios
+    /// - Throws: TaskPlanServiceError for various failure scenarios
     func generateTaskPlan(
         goalTitle: String,
         goalDescription: String,
@@ -43,16 +43,16 @@ class TaskPlanService {
             let response = try await deepseekClient.chatCompletion(request)
             
             guard let choice = response.choices.first else {
-                throw TaskPlanError.emptyResponse("No response choices received")
+                throw TaskPlanServiceError.emptyResponse("No response choices received")
             }
             
             let content = choice.message.content
             return try parseTaskPlanResponse(content)
             
         } catch let error as DeepseekError {
-            throw TaskPlanError.aiServiceError(error.localizedDescription)
+            throw TaskPlanServiceError.aiServiceError(error.localizedDescription)
         } catch {
-            throw TaskPlanError.unknownError(error.localizedDescription)
+            throw TaskPlanServiceError.unknownError(error.localizedDescription)
         }
     }
     
@@ -123,7 +123,7 @@ class TaskPlanService {
         let cleanedContent = cleanJSONResponse(content)
         
         guard let data = cleanedContent.data(using: .utf8) else {
-            throw TaskPlanError.parsingFailed("Failed to convert response to data")
+            throw TaskPlanServiceError.parsingFailed("Failed to convert response to data")
         }
         
         do {
@@ -134,7 +134,7 @@ class TaskPlanService {
             
             return taskPlan
         } catch let decodingError as DecodingError {
-            throw TaskPlanError.parsingFailed("JSON parsing failed: \(decodingError.localizedDescription)")
+            throw TaskPlanServiceError.parsingFailed("JSON parsing failed: \(decodingError.localizedDescription)")
         } catch {
             throw error
         }
@@ -167,28 +167,28 @@ class TaskPlanService {
     /// Validate the generated task plan
     private func validateTaskPlan(_ taskPlan: AIGeneratedTaskPlan) throws {
         guard !taskPlan.tasks.isEmpty else {
-            throw TaskPlanError.validationFailed("Task plan must contain at least one task")
+            throw TaskPlanServiceError.validationFailed("Task plan must contain at least one task")
         }
         
         guard !taskPlan.totalDuration.isEmpty else {
-            throw TaskPlanError.validationFailed("Total duration must not be empty")
+            throw TaskPlanServiceError.validationFailed("Total duration must not be empty")
         }
         
         for (index, task) in taskPlan.tasks.enumerated() {
             guard !task.title.isEmpty else {
-                throw TaskPlanError.validationFailed("Task \(index) title must not be empty")
+                throw TaskPlanServiceError.validationFailed("Task \(index) title must not be empty")
             }
             
             guard !task.description.isEmpty else {
-                throw TaskPlanError.validationFailed("Task \(index) description must not be empty")
+                throw TaskPlanServiceError.validationFailed("Task \(index) description must not be empty")
             }
             
             guard task.estimatedDuration > 0 else {
-                throw TaskPlanError.validationFailed("Task \(index) estimated duration must be positive")
+                throw TaskPlanServiceError.validationFailed("Task \(index) estimated duration must be positive")
             }
             
             guard TaskTimeScope.allCases.map(\.rawValue).contains(task.timeScope) else {
-                throw TaskPlanError.validationFailed("Task \(index) has invalid time scope: \(task.timeScope)")
+                throw TaskPlanServiceError.validationFailed("Task \(index) has invalid time scope: \(task.timeScope)")
             }
         }
     }
@@ -215,7 +215,7 @@ struct AIGeneratedTask: Codable {
 // MARK: - Error Types
 
 /// Task plan service specific errors
-enum TaskPlanError: Error, LocalizedError {
+enum TaskPlanServiceError: Error, LocalizedError {
     case emptyResponse(String)
     case parsingFailed(String)
     case validationFailed(String)
@@ -255,9 +255,9 @@ extension TaskPlanService {
         let taskItems = aiTaskPlan.tasks.map { aiTask in
             TaskItem(
                 title: aiTask.title,
-                description: aiTask.description,
-                timeScope: TaskTimeScope(rawValue: aiTask.timeScope) ?? .daily,
+                taskDescription: aiTask.description,
                 estimatedDuration: aiTask.estimatedDuration,
+                timeScope: TaskTimeScope(rawValue: aiTask.timeScope) ?? .daily,
                 orderIndex: aiTask.orderIndex,
                 executionTips: aiTask.executionTips
             )

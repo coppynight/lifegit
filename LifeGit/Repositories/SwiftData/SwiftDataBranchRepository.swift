@@ -101,7 +101,7 @@ class SwiftDataBranchRepository: BranchRepository {
     func findByUserId(_ userId: UUID) async throws -> [Branch] {
         do {
             let descriptor = FetchDescriptor<Branch>(
-                predicate: #Predicate { $0.userId == userId },
+                predicate: #Predicate { $0.user?.id == userId },
                 sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
             )
             

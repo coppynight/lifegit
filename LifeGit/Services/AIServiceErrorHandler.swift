@@ -4,12 +4,13 @@ import Network
 /// Handler for AI service errors and offline mode support
 class AIServiceErrorHandler: ObservableObject {
     @Published var isOnline = true
-    @Published var lastError: AIServiceError?
+    @Published var lastError: AIServiceErrorContext?
     @Published var retryCount = 0
     
     private let networkMonitor = NWPathMonitor()
     private let monitorQueue = DispatchQueue(label: "NetworkMonitor")
     private let maxRetries = 3
+    private let errorHandler = ErrorHandler.shared
     
     init() {
         startNetworkMonitoring()
@@ -31,15 +32,19 @@ class AIServiceErrorHandler: ObservableObject {
     
     /// Handle AI service errors with appropriate user feedback
     /// - Parameter error: The error that occurred
+    /// - Parameter context: Context where the error occurred
     /// - Returns: User-friendly error message and suggested action
-    func handleError(_ error: Error) -> AIServiceErrorInfo {
+    func handleError(_ error: Error, context: String? = nil) -> AIServiceErrorInfo {
         let errorInfo: AIServiceErrorInfo
+        let appError: AppError
         
         switch error {
         case let deepseekError as DeepseekError:
             errorInfo = handleDeepseekError(deepseekError)
+            appError = .aiServiceError(.deepseekError(deepseekError))
         case let taskPlanError as TaskPlanError:
             errorInfo = handleTaskPlanError(taskPlanError)
+            appError = .aiServiceError(.taskPlanError(taskPlanError))
         default:
             errorInfo = AIServiceErrorInfo(
                 title: "未知错误",
@@ -47,13 +52,19 @@ class AIServiceErrorHandler: ObservableObject {
                 action: .retry,
                 canRetry: true
             )
+            appError = .aiServiceError(.invalidResponse("未知错误"))
         }
         
-        lastError = AIServiceError(
+        lastError = AIServiceErrorContext(
             originalError: error,
             errorInfo: errorInfo,
             timestamp: Date()
         )
+        
+        // Log to global error handler
+        Task { @MainActor in
+            errorHandler.handleSilently(appError, context: context)
+        }
         
         return errorInfo
     }
@@ -191,9 +202,9 @@ class AIServiceErrorHandler: ObservableObject {
         // Create a basic task structure for manual editing
         let defaultTask = TaskItem(
             title: "开始执行：\(goalTitle)",
-            description: "请根据目标描述制定具体的执行步骤：\(goalDescription)",
-            timeScope: .daily,
+            taskDescription: "请根据目标描述制定具体的执行步骤：\(goalDescription)",
             estimatedDuration: 60,
+            timeScope: .daily,
             orderIndex: 0,
             executionTips: "这是一个手动创建的任务，请根据实际情况修改任务内容和时间安排"
         )
@@ -209,12 +220,12 @@ class AIServiceErrorHandler: ObservableObject {
 struct AIServiceErrorInfo {
     let title: String
     let message: String
-    let action: ErrorAction
+    let action: AIServiceErrorAction
     let canRetry: Bool
 }
 
 /// Possible actions user can take when error occurs
-enum ErrorAction {
+enum AIServiceErrorAction {
     case retry
     case waitAndRetry
     case useOfflineMode
@@ -222,7 +233,7 @@ enum ErrorAction {
 }
 
 /// Complete AI service error with context
-struct AIServiceError {
+struct AIServiceErrorContext {
     let originalError: Error
     let errorInfo: AIServiceErrorInfo
     let timestamp: Date
@@ -230,7 +241,7 @@ struct AIServiceError {
 
 // MARK: - Extensions
 
-extension ErrorAction {
+extension AIServiceErrorAction {
     var actionTitle: String {
         switch self {
         case .retry:

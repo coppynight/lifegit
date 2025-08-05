@@ -6,7 +6,7 @@ class Commit {
     @Attribute(.unique) var id: UUID
     var message: String
     var type: CommitType
-    var timestamp: Date
+    var timestamp: Date = Date()
     var branchId: UUID
     var relatedTaskId: UUID? // 关联的任务项ID（如果有）
     

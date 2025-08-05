@@ -5,14 +5,14 @@ import SwiftData
 class Branch {
     @Attribute(.unique) var id: UUID
     var name: String
-    var description: String
+    var branchDescription: String
     var status: BranchStatus
-    var createdAt: Date
+    var createdAt: Date = Date()
     var completedAt: Date?
     var expectedCompletionDate: Date?
-    var progress: Double // 0.0 - 1.0
+    var progress: Double = 0.0 // 0.0 - 1.0
     var parentBranchId: UUID? // 通常是master分支的ID
-    var isMaster: Bool // 标识是否为主干分支
+    var isMaster: Bool = false // 标识是否为主干分支
     
     @Relationship(deleteRule: .cascade) var commits: [Commit] = []
     @Relationship(deleteRule: .cascade) var taskPlan: TaskPlan?
@@ -20,7 +20,7 @@ class Branch {
     
     init(id: UUID = UUID(), 
          name: String, 
-         description: String, 
+         branchDescription: String, 
          status: BranchStatus = .active,
          createdAt: Date = Date(),
          expectedCompletionDate: Date? = nil,
@@ -29,7 +29,7 @@ class Branch {
          isMaster: Bool = false) {
         self.id = id
         self.name = name
-        self.description = description
+        self.branchDescription = branchDescription
         self.status = status
         self.createdAt = createdAt
         self.expectedCompletionDate = expectedCompletionDate

@@ -63,7 +63,7 @@ class SwiftDataCommitRepository: CommitRepository {
     func findAll() async throws -> [Commit] {
         do {
             let descriptor = FetchDescriptor<Commit>(
-                sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+                sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
             )
             
             return try modelContext.fetch(descriptor)
@@ -76,7 +76,7 @@ class SwiftDataCommitRepository: CommitRepository {
         do {
             let descriptor = FetchDescriptor<Commit>(
                 predicate: #Predicate { $0.branchId == branchId },
-                sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+                sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
             )
             
             return try modelContext.fetch(descriptor)
@@ -89,7 +89,7 @@ class SwiftDataCommitRepository: CommitRepository {
         do {
             let descriptor = FetchDescriptor<Commit>(
                 predicate: #Predicate { $0.type == type },
-                sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+                sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
             )
             
             return try modelContext.fetch(descriptor)
@@ -102,7 +102,7 @@ class SwiftDataCommitRepository: CommitRepository {
         do {
             let descriptor = FetchDescriptor<Commit>(
                 predicate: #Predicate { $0.branchId == branchId && $0.type == type },
-                sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+                sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
             )
             
             return try modelContext.fetch(descriptor)
@@ -114,8 +114,8 @@ class SwiftDataCommitRepository: CommitRepository {
     func findByDateRange(from startDate: Date, to endDate: Date) async throws -> [Commit] {
         do {
             let descriptor = FetchDescriptor<Commit>(
-                predicate: #Predicate { $0.createdAt >= startDate && $0.createdAt <= endDate },
-                sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+                predicate: #Predicate { $0.timestamp >= startDate && $0.timestamp <= endDate },
+                sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
             )
             
             return try modelContext.fetch(descriptor)
@@ -129,10 +129,10 @@ class SwiftDataCommitRepository: CommitRepository {
             let descriptor = FetchDescriptor<Commit>(
                 predicate: #Predicate { 
                     $0.branchId == branchId && 
-                    $0.createdAt >= startDate && 
-                    $0.createdAt <= endDate 
+                    $0.timestamp >= startDate && 
+                    $0.timestamp <= endDate 
                 },
-                sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+                sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
             )
             
             return try modelContext.fetch(descriptor)
@@ -154,12 +154,12 @@ class SwiftDataCommitRepository: CommitRepository {
         }
     }
     
-    func getRecentCommits(limit: Int) async throws -> [Commit] {
+    func getRecentCommits(count: Int) async throws -> [Commit] {
         do {
-            let descriptor = FetchDescriptor<Commit>(
-                sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+            var descriptor = FetchDescriptor<Commit>(
+                sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
             )
-            descriptor.fetchLimit = limit
+            descriptor.fetchLimit = count
             
             return try modelContext.fetch(descriptor)
         } catch {
@@ -171,7 +171,7 @@ class SwiftDataCommitRepository: CommitRepository {
         do {
             let descriptor = FetchDescriptor<Commit>(
                 predicate: #Predicate { $0.message.contains(searchText) },
-                sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+                sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
             )
             
             return try modelContext.fetch(descriptor)

@@ -10,6 +10,11 @@ class SwiftDataTaskPlanRepository: TaskPlanRepository {
         self.modelContext = modelContext
     }
     
+    // Default initializer using shared model context
+    convenience init() {
+        self.init(modelContext: DataManager.shared.modelContext)
+    }
+    
     func create(_ taskPlan: TaskPlan) async throws {
         do {
             modelContext.insert(taskPlan)

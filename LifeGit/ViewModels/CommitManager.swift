@@ -127,14 +127,14 @@ class CommitManager: ObservableObject {
     }
     
     /// Get recent commits across all branches
-    /// - Parameter limit: Maximum number of commits to return
+    /// - Parameter count: Maximum number of commits to return
     /// - Returns: Array of recent commits
-    func getRecentCommits(limit: Int = 20) async throws -> [Commit] {
+    func getRecentCommits(count: Int = 20) async throws -> [Commit] {
         isLoading = true
         defer { isLoading = false }
         
         do {
-            return try await commitRepository.getRecentCommits(limit: limit)
+            return try await commitRepository.getRecentCommits(count: count)
         } catch {
             self.error = CommitManagerError.queryFailed(error.localizedDescription)
             throw error
@@ -246,12 +246,12 @@ class CommitManager: ObservableObject {
             
             // Calculate commit frequency (commits per day over last 30 days)
             let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
-            let recentCommits = allCommits.filter { $0.createdAt >= thirtyDaysAgo }
+            let recentCommits = allCommits.filter { $0.timestamp >= thirtyDaysAgo }
             let commitFrequency = Double(recentCommits.count) / 30.0
             
             // Find most active day of week
             let dayOfWeekCounts = Dictionary(grouping: allCommits) { commit in
-                Calendar.current.component(.weekday, from: commit.createdAt)
+                Calendar.current.component(.weekday, from: commit.timestamp)
             }.mapValues { $0.count }
             
             let mostActiveDay = dayOfWeekCounts.max(by: { $0.value < $1.value })?.key ?? 1
@@ -264,8 +264,8 @@ class CommitManager: ObservableObject {
                 milestoneCount: milestoneCount,
                 commitFrequency: commitFrequency,
                 mostActiveDay: mostActiveDay,
-                firstCommitDate: allCommits.last?.createdAt,
-                lastCommitDate: allCommits.first?.createdAt
+                firstCommitDate: allCommits.last?.timestamp,
+                lastCommitDate: allCommits.first?.timestamp
             )
             
         } catch {
@@ -288,7 +288,7 @@ class CommitManager: ObservableObject {
             
             // Group commits by date
             let commitsByDate = Dictionary(grouping: commits) { commit in
-                calendar.startOfDay(for: commit.createdAt)
+                calendar.startOfDay(for: commit.timestamp)
             }
             
             // Count consecutive days with commits

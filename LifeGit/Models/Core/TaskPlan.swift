@@ -6,9 +6,9 @@ class TaskPlan {
     @Attribute(.unique) var id: UUID
     var branchId: UUID
     var totalDuration: String // 预计总时长描述
-    var createdAt: Date
+    var createdAt: Date = Date()
     var lastModifiedAt: Date?
-    var isAIGenerated: Bool
+    var isAIGenerated: Bool = false
     
     @Relationship(deleteRule: .cascade) var tasks: [TaskItem] = []
     @Relationship(inverse: \Branch.taskPlan) var branch: Branch?

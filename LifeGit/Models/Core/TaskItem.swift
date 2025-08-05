@@ -5,36 +5,39 @@ import SwiftData
 class TaskItem {
     @Attribute(.unique) var id: UUID
     var title: String
-    var description: String
+    var taskDescription: String
     var estimatedDuration: Int // 预估时长（分钟）
     var timeScope: TaskTimeScope // 时间维度：日、周、月
-    var isAIGenerated: Bool // 是否由AI生成
+    var isAIGenerated: Bool = false // 是否由AI生成
     var orderIndex: Int // 任务顺序
-    var isCompleted: Bool // 是否已完成
+    var isCompleted: Bool = false // 是否已完成
     var completedAt: Date? // 完成时间
-    var createdAt: Date
+    var createdAt: Date = Date()
     var lastModifiedAt: Date?
+    var executionTips: String? // 执行建议
     
     @Relationship(inverse: \TaskPlan.tasks) var taskPlan: TaskPlan?
     
     init(id: UUID = UUID(),
          title: String,
-         description: String,
+         taskDescription: String,
          estimatedDuration: Int,
          timeScope: TaskTimeScope,
          isAIGenerated: Bool = false,
          orderIndex: Int,
          isCompleted: Bool = false,
-         createdAt: Date = Date()) {
+         createdAt: Date = Date(),
+         executionTips: String? = nil) {
         self.id = id
         self.title = title
-        self.description = description
+        self.taskDescription = taskDescription
         self.estimatedDuration = estimatedDuration
         self.timeScope = timeScope
         self.isAIGenerated = isAIGenerated
         self.orderIndex = orderIndex
         self.isCompleted = isCompleted
         self.createdAt = createdAt
+        self.executionTips = executionTips
     }
     
     // 标记任务为完成

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="EHf-IW-A2E">
+            <objects>
+                <viewController id="01J-lp-oVM" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <!-- Background Gradient -->
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gradient-background">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </view>
+                            
+                            <!-- App Icon Container -->
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="icon-container">
+                                <rect key="frame" x="146.66666666666666" y="366" width="100" height="100"/>
+                                <subviews>
+                                    <!-- App Icon Background Circle -->
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="icon-background">
+                                        <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+                                        <color key="backgroundColor" systemColor="tintColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="100" id="icon-bg-width"/>
+                                            <constraint firstAttribute="height" constant="100" id="icon-bg-height"/>
+                                        </constraints>
+
+                                    </view>
+                                    
+                                    <!-- Git Branch Icon -->
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="git.branch" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="git-icon">
+                                        <rect key="frame" x="25" y="25" width="50" height="50"/>
+                                        <color key="tintColor" systemColor="systemBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="50" id="git-icon-width"/>
+                                            <constraint firstAttribute="height" constant="50" id="git-icon-height"/>
+                                        </constraints>
+                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="36" weight="light"/>
+                                    </imageView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="icon-background" firstAttribute="centerX" secondItem="icon-container" secondAttribute="centerX" id="icon-bg-center-x"/>
+                                    <constraint firstItem="icon-background" firstAttribute="centerY" secondItem="icon-container" secondAttribute="centerY" id="icon-bg-center-y"/>
+                                    <constraint firstItem="git-icon" firstAttribute="centerX" secondItem="icon-container" secondAttribute="centerX" id="git-icon-center-x"/>
+                                    <constraint firstItem="git-icon" firstAttribute="centerY" secondItem="icon-container" secondAttribute="centerY" id="git-icon-center-y"/>
+                                    <constraint firstAttribute="width" constant="100" id="icon-container-width"/>
+                                    <constraint firstAttribute="height" constant="100" id="icon-container-height"/>
+                                </constraints>
+                            </view>
+                            
+                            <!-- App Name -->
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="人生Git" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="app-name">
+                                <rect key="frame" x="146.66666666666666" y="486" width="100" height="36"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="30"/>
+                                <color key="textColor" systemColor="labelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            
+                            <!-- App Tagline -->
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="用Git的方式管理人生目标" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="app-tagline">
+                                <rect key="frame" x="96.666666666666686" y="534" width="200" height="20"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            
+                            <!-- Loading Indicator -->
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="loading-indicator">
+                                <rect key="frame" x="186.66666666666666" y="734" width="20" height="20"/>
+                                <color key="color" systemColor="tintColor"/>
+                            </activityIndicatorView>
+                            
+                            <!-- Version Label -->
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="版本 1.0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="version-label">
+                                <rect key="frame" x="171.66666666666666" y="774" width="50" height="16"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" systemColor="tertiaryLabelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <!-- Background -->
+                            <constraint firstItem="gradient-background" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="bg-top"/>
+                            <constraint firstItem="gradient-background" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="bg-leading"/>
+                            <constraint firstAttribute="trailing" secondItem="gradient-background" secondAttribute="trailing" id="bg-trailing"/>
+                            <constraint firstAttribute="bottom" secondItem="gradient-background" secondAttribute="bottom" id="bg-bottom"/>
+                            
+                            <!-- Icon Container -->
+                            <constraint firstItem="icon-container" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="icon-center-x"/>
+                            <constraint firstItem="icon-container" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" constant="-60" id="icon-center-y"/>
+                            
+                            <!-- App Name -->
+                            <constraint firstItem="app-name" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="name-center-x"/>
+                            <constraint firstItem="app-name" firstAttribute="top" secondItem="icon-container" secondAttribute="bottom" constant="20" id="name-top"/>
+                            
+                            <!-- App Tagline -->
+                            <constraint firstItem="app-tagline" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="tagline-center-x"/>
+                            <constraint firstItem="app-tagline" firstAttribute="top" secondItem="app-name" secondAttribute="bottom" constant="12" id="tagline-top"/>
+                            
+                            <!-- Loading Indicator -->
+                            <constraint firstItem="loading-indicator" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="loading-center-x"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="loading-indicator" secondAttribute="bottom" constant="98" id="loading-bottom"/>
+                            
+                            <!-- Version Label -->
+                            <constraint firstItem="version-label" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="version-center-x"/>
+                            <constraint firstItem="version-label" firstAttribute="top" secondItem="loading-indicator" secondAttribute="bottom" constant="20" id="version-top"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="53" y="375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="git.branch" catalog="system" width="128" height="128"/>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="tertiaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="tintColor">
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

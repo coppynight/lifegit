@@ -4,9 +4,9 @@ import SwiftData
 @Model
 class User {
     @Attribute(.unique) var id: UUID
-    var currentVersion: String
-    var createdAt: Date
-    var lastActiveAt: Date
+    var currentVersion: String = "v1.0"
+    var createdAt: Date = Date()
+    var lastActiveAt: Date = Date()
     
     @Relationship(deleteRule: .cascade) var branches: [Branch] = []
     @Relationship(deleteRule: .cascade) var commits: [Commit] = []

@@ -9,11 +9,14 @@ class TaskPlanManager: ObservableObject {
     @Published var isGenerating = false
     @Published var isEditing = false
     @Published var error: TaskPlanManagerError?
+    @Published var loadingState: LoadingState?
     
     // MARK: - Private Properties
     private let taskPlanRepository: TaskPlanRepository
     private let taskPlanService: TaskPlanService
     private let aiErrorHandler: AIServiceErrorHandler
+    private let errorHandler = ErrorHandler.shared
+    private let feedbackManager = FeedbackManager.shared
     
     // MARK: - Initialization
     init(
@@ -41,7 +44,11 @@ class TaskPlanManager: ObservableObject {
         timeframe: String? = nil
     ) async throws -> TaskPlan {
         isGenerating = true
-        defer { isGenerating = false }
+        loadingState = .aiTaskGeneration
+        defer { 
+            isGenerating = false
+            loadingState = nil
+        }
         
         do {
             // Generate task plan with AI
@@ -60,13 +67,22 @@ class TaskPlanManager: ObservableObject {
             // Reset retry count on success
             aiErrorHandler.resetRetryCount()
             
+            // Show success feedback
+            feedbackManager.showSuccess(title: "AI任务计划生成成功", message: "已为您生成详细的任务计划")
+            
             return taskPlan
             
         } catch {
             // Handle AI service errors
-            let errorInfo = aiErrorHandler.handleError(error)
+            let errorInfo = aiErrorHandler.handleError(error, context: "TaskPlanManager.generateTaskPlan")
             
             if errorInfo.canRetry && aiErrorHandler.shouldRetry() {
+                // Show retry feedback
+                feedbackManager.showInfo(
+                    title: "重试中",
+                    message: "AI服务暂时不可用，正在重试..."
+                )
+                
                 // Wait and retry
                 let delay = aiErrorHandler.getRetryDelay()
                 try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
@@ -78,6 +94,12 @@ class TaskPlanManager: ObservableObject {
                     timeframe: timeframe
                 )
             } else {
+                // Show fallback feedback
+                feedbackManager.showWarning(
+                    title: "AI服务不可用",
+                    message: "已为您创建手动任务计划，您可以稍后编辑"
+                )
+                
                 // Fallback to manual task plan
                 let manualTaskPlan = createManualTaskPlan(
                     goalTitle: goalTitle,
@@ -96,26 +118,43 @@ class TaskPlanManager: ObservableObject {
     /// - Returns: New task plan
     func regenerateTaskPlan(_ taskPlan: TaskPlan) async throws -> TaskPlan {
         guard let branch = taskPlan.branch else {
-            throw TaskPlanManagerError.invalidTaskPlan("Task plan has no associated branch")
+            let error = TaskPlanManagerError.invalidTaskPlan("Task plan has no associated branch")
+            errorHandler.handle(AppError.validationError(.requiredFieldMissing("关联分支")), 
+                              context: "TaskPlanManager.regenerateTaskPlan")
+            throw error
         }
         
         isGenerating = true
-        defer { isGenerating = false }
+        loadingState = .aiTaskGeneration
+        defer { 
+            isGenerating = false
+            loadingState = nil
+        }
         
         do {
             // Delete existing task plan
             try await taskPlanRepository.delete(id: taskPlan.id)
             
             // Generate new task plan
-            return try await generateTaskPlan(
+            let newTaskPlan = try await generateTaskPlan(
                 goalTitle: branch.name,
-                goalDescription: branch.description,
+                goalDescription: branch.branchDescription,
                 branchId: branch.id
             )
             
+            feedbackManager.showSuccess(
+                title: "任务计划已重新生成",
+                message: "新的任务计划已准备就绪"
+            )
+            
+            return newTaskPlan
+            
         } catch {
-            self.error = TaskPlanManagerError.regenerationFailed(error.localizedDescription)
-            throw error
+            let managerError = TaskPlanManagerError.regenerationFailed(error.localizedDescription)
+            errorHandler.handle(AppError.aiServiceError(.taskPlanError(.validationFailed(error.localizedDescription))), 
+                              context: "TaskPlanManager.regenerateTaskPlan")
+            self.error = managerError
+            throw managerError
         }
     }
     
@@ -134,9 +173,9 @@ class TaskPlanManager: ObservableObject {
         // Create a basic task structure for manual editing
         let defaultTask = TaskItem(
             title: "开始执行：\(goalTitle)",
-            description: "请根据目标描述制定具体的执行步骤：\(goalDescription)",
-            timeScope: .daily,
+            taskDescription: "请根据目标描述制定具体的执行步骤：\(goalDescription)",
             estimatedDuration: 60,
+            timeScope: .daily,
             orderIndex: 0,
             executionTips: "这是一个手动创建的任务，请根据实际情况修改任务内容和时间安排"
         )
@@ -152,15 +191,25 @@ class TaskPlanManager: ObservableObject {
     ///   - totalDuration: New total duration description
     func updateTaskPlan(_ taskPlan: TaskPlan, totalDuration: String) async throws {
         isEditing = true
-        defer { isEditing = false }
+        loadingState = .savingData
+        defer { 
+            isEditing = false
+            loadingState = nil
+        }
         
         do {
             taskPlan.totalDuration = totalDuration
             try await taskPlanRepository.update(taskPlan)
             
+            feedbackManager.showSuccess(title: "任务计划已保存", message: "您的更改已成功保存")
+            
         } catch {
-            self.error = TaskPlanManagerError.updateFailed(error.localizedDescription)
-            throw error
+            let managerError = TaskPlanManagerError.updateFailed(error.localizedDescription)
+            errorHandler.handle(AppError.dataError(.saveFailure(underlying: error)), 
+                              context: "TaskPlanManager.updateTaskPlan")
+            self.error = managerError
+            feedbackManager.showError(title: "保存失败", message: "无法保存任务计划，请重试")
+            throw managerError
         }
     }
     
@@ -187,9 +236,9 @@ class TaskPlanManager: ObservableObject {
         do {
             let taskItem = TaskItem(
                 title: title,
-                description: description,
-                timeScope: timeScope,
+                taskDescription: description,
                 estimatedDuration: estimatedDuration,
+                timeScope: timeScope,
                 orderIndex: taskPlan.tasks.count,
                 executionTips: executionTips
             )
@@ -223,7 +272,7 @@ class TaskPlanManager: ObservableObject {
         
         do {
             taskItem.title = title
-            taskItem.description = description
+            taskItem.taskDescription = description
             taskItem.timeScope = timeScope
             taskItem.estimatedDuration = estimatedDuration
             taskItem.executionTips = executionTips
@@ -283,6 +332,7 @@ class TaskPlanManager: ObservableObject {
         defer { isEditing = false }
         
         do {
+            let wasCompleted = taskItem.isCompleted
             taskItem.isCompleted.toggle()
             
             if taskItem.isCompleted {
@@ -293,14 +343,33 @@ class TaskPlanManager: ObservableObject {
             
             // Find and update the task plan
             guard let taskPlan = try await findTaskPlanContaining(taskItem) else {
-                throw TaskPlanManagerError.taskPlanNotFound("Task plan containing task item not found")
+                let error = TaskPlanManagerError.taskPlanNotFound("Task plan containing task item not found")
+                errorHandler.handle(AppError.dataError(.taskPlanNotFound(id: taskItem.id)), 
+                                  context: "TaskPlanManager.toggleTaskCompletion")
+                throw error
             }
             
             try await taskPlanRepository.update(taskPlan)
             
+            // Show appropriate feedback
+            if taskItem.isCompleted {
+                feedbackManager.showSuccess(
+                    title: "任务已完成",
+                    message: "'\(taskItem.title)' 已标记为完成"
+                )
+            } else {
+                feedbackManager.showInfo(
+                    title: "任务已重新打开",
+                    message: "'\(taskItem.title)' 已标记为未完成"
+                )
+            }
+            
         } catch {
-            self.error = TaskPlanManagerError.taskCompletionFailed(error.localizedDescription)
-            throw error
+            let managerError = TaskPlanManagerError.taskCompletionFailed(error.localizedDescription)
+            errorHandler.handle(AppError.dataError(.saveFailure(underlying: error)), 
+                              context: "TaskPlanManager.toggleTaskCompletion")
+            self.error = managerError
+            throw managerError
         }
     }
     
@@ -381,7 +450,7 @@ struct TaskPlanProgress {
 }
 
 /// Task plan manager specific errors
-enum TaskPlanManagerError: Error, LocalizedError {
+enum TaskPlanManagerError: Error, LocalizedError, Equatable {
     case generationFailed(String)
     case regenerationFailed(String)
     case updateFailed(String)

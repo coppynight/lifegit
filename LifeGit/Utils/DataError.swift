@@ -10,6 +10,12 @@ enum DataError: LocalizedError {
     case fetchFailure(underlying: Error)
     case migrationFailure(underlying: Error)
     case invalidData(reason: String)
+    case creationFailed(String)
+    case updateFailed(String)
+    case deletionFailed(String)
+    case notFound(String)
+    case queryFailed(String)
+    case resetFailure(reason: String)
     
     var errorDescription: String? {
         switch self {
@@ -31,6 +37,18 @@ enum DataError: LocalizedError {
             return "数据迁移失败: \(underlying.localizedDescription)"
         case .invalidData(let reason):
             return "数据无效: \(reason)"
+        case .creationFailed(let message):
+            return "创建数据失败: \(message)"
+        case .updateFailed(let message):
+            return "更新数据失败: \(message)"
+        case .deletionFailed(let message):
+            return "删除数据失败: \(message)"
+        case .notFound(let message):
+            return "未找到数据: \(message)"
+        case .queryFailed(let message):
+            return "查询数据失败: \(message)"
+        case .resetFailure(let reason):
+            return "数据库重置失败: \(reason)"
         }
     }
     
@@ -38,14 +56,35 @@ enum DataError: LocalizedError {
         switch self {
         case .userNotFound, .masterBranchNotFound:
             return "请尝试重新启动应用以初始化默认数据"
-        case .saveFailure, .fetchFailure:
+        case .saveFailure, .fetchFailure, .creationFailed, .updateFailed, .deletionFailed, .queryFailed:
             return "请检查设备存储空间并重试"
         case .migrationFailure:
             return "请联系技术支持或重新安装应用"
         case .invalidData:
             return "请检查输入数据的格式和完整性"
+        case .notFound:
+            return "请检查数据是否存在"
+        case .resetFailure:
+            return "请重新启动应用或联系技术支持"
         default:
             return "请重试操作，如问题持续存在请联系技术支持"
+        }
+    }
+    
+    var severity: ErrorSeverity {
+        switch self {
+        case .userNotFound, .masterBranchNotFound:
+            return .high
+        case .saveFailure, .fetchFailure, .creationFailed, .updateFailed, .deletionFailed, .queryFailed:
+            return .medium
+        case .migrationFailure:
+            return .high
+        case .invalidData, .notFound:
+            return .low
+        case .resetFailure:
+            return .high
+        default:
+            return .medium
         }
     }
 }
