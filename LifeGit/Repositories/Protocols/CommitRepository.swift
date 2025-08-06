@@ -3,6 +3,8 @@ import SwiftData
 
 /// Protocol defining the interface for commit data operations
 protocol CommitRepository {
+    /// The model context for data operations
+    var modelContext: ModelContext { get }
     /// Create a new commit
     /// - Parameter commit: The commit to create
     /// - Throws: DataError if creation fails

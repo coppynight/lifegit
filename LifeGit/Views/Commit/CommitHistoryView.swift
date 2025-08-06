@@ -21,7 +21,7 @@ struct CommitHistoryView: View {
     @State private var errorMessage = ""
     @State private var selectedCommit: Commit?
     @State private var showingCommitDetail = false
-    @State private var dateRange: DateRange = .all
+    @State private var dateRange: CommitDateRange = .all
     
     // MARK: - Computed Properties
     private var title: String {
@@ -33,9 +33,9 @@ struct CommitHistoryView: View {
     }
     
     // MARK: - Initialization
-    init(branch: Branch? = nil, commitRepository: CommitRepository) {
+    init(branch: Branch? = nil, commitRepository: CommitRepository, modelContext: ModelContext) {
         self.branch = branch
-        self._commitManager = StateObject(wrappedValue: CommitManager(commitRepository: commitRepository))
+        self._commitManager = StateObject(wrappedValue: CommitManager(commitRepository: commitRepository, modelContext: modelContext))
     }
     
     // MARK: - Body
@@ -512,7 +512,7 @@ private struct CommitGroup {
     let commits: [Commit]
 }
 
-private enum DateRange: CaseIterable {
+private enum CommitDateRange: CaseIterable {
     case all
     case today
     case thisWeek
@@ -545,6 +545,6 @@ private enum DateRange: CaseIterable {
     // Create repository
     let repository = SwiftDataCommitRepository(modelContext: context)
     
-    CommitHistoryView(branch: branch, commitRepository: repository)
+    CommitHistoryView(branch: branch, commitRepository: repository, modelContext: context)
         .modelContainer(container)
 }

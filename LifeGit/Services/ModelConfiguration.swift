@@ -10,7 +10,12 @@ struct LifeGitModelConfiguration {
             Branch.self,
             Commit.self,
             TaskPlan.self,
-            TaskItem.self
+            TaskItem.self,
+            VersionRecord.self,
+            BranchReview.self,
+            AbandonmentAnalysis.self,
+            FailurePatternAnalysis.self,
+            Tag.self
         ])
     }
     
@@ -37,7 +42,12 @@ struct LifeGitModelConfiguration {
             Branch.self,
             Commit.self,
             TaskPlan.self,
-            TaskItem.self
+            TaskItem.self,
+            VersionRecord.self,
+            BranchReview.self,
+            AbandonmentAnalysis.self,
+            FailurePatternAnalysis.self,
+            Tag.self
         ]
     }
 }

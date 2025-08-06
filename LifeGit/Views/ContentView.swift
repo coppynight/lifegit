@@ -10,6 +10,17 @@ struct ContentView: View {
     @State private var selectedTab = 0
     @State private var showingOnboarding = false
     
+    // Version manager for handling version upgrades
+    @StateObject private var versionManager: VersionManager
+    
+    init() {
+        // Initialize version manager with model context
+        // Note: This is a simplified initialization - in production, 
+        // you'd want to inject this through dependency injection
+        let modelContext = ModelContext(try! ModelContainer(for: User.self, Branch.self, Commit.self, TaskPlan.self, TaskItem.self, VersionRecord.self))
+        self._versionManager = StateObject(wrappedValue: VersionManager(modelContext: modelContext))
+    }
+    
     var body: some View {
         ZStack {
             TabView(selection: $selectedTab) {
@@ -96,6 +107,7 @@ struct ContentView: View {
             .environmentObject(errorHandler)
             .environmentObject(feedbackManager)
             .environmentObject(networkManager)
+            .environmentObject(versionManager)
             
             // Feedback container for toast notifications
             FeedbackContainer()
@@ -112,6 +124,20 @@ struct ContentView: View {
         .fullScreenCover(isPresented: $showingOnboarding) {
             OnboardingView()
                 .environmentObject(appState)
+        }
+        // Version upgrade confirmation
+        .sheet(isPresented: $versionManager.isShowingUpgradeConfirmation) {
+            if let pendingUpgrade = versionManager.pendingVersionUpgrade {
+                VersionUpgradeConfirmationView(
+                    pendingUpgrade: pendingUpgrade,
+                    onConfirm: {
+                        await versionManager.confirmVersionUpgrade()
+                    },
+                    onDecline: {
+                        versionManager.declineVersionUpgrade()
+                    }
+                )
+            }
         }
         // Global error presentation
         .sheet(isPresented: $errorHandler.isShowingError) {
@@ -228,5 +254,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [User.self, Branch.self, Commit.self, TaskPlan.self, TaskItem.self])
+        .modelContainer(for: [User.self, Branch.self, Commit.self, TaskPlan.self, TaskItem.self, VersionRecord.self])
 }

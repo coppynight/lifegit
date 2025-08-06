@@ -16,6 +16,7 @@ class Branch {
     
     @Relationship(deleteRule: .cascade) var commits: [Commit] = []
     @Relationship(deleteRule: .cascade) var taskPlan: TaskPlan?
+    @Relationship(deleteRule: .cascade) var review: BranchReview?
     @Relationship(inverse: \User.branches) var user: User?
     
     init(id: UUID = UUID(), 

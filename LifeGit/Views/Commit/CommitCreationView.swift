@@ -22,9 +22,9 @@ struct CommitCreationView: View {
     @FocusState private var isMessageFieldFocused: Bool
     
     // MARK: - Initialization
-    init(branch: Branch, commitRepository: CommitRepository) {
+    init(branch: Branch, commitRepository: CommitRepository, modelContext: ModelContext) {
         self.branch = branch
-        self._commitManager = StateObject(wrappedValue: CommitManager(commitRepository: commitRepository))
+        self._commitManager = StateObject(wrappedValue: CommitManager(commitRepository: commitRepository, modelContext: modelContext))
     }
     
     // MARK: - Body
@@ -371,6 +371,38 @@ struct CommitCreationView: View {
             return "🌟 记录了一些思考"
         case .milestone:
             return "🏆 达成了一个里程碑"
+        case .habit:
+            return "🔄 坚持了一个好习惯"
+        case .exercise:
+            return "💪 完成了运动锻炼"
+        case .reading:
+            return "📖 阅读了一些内容"
+        case .creativity:
+            return "🎨 进行了创意创作"
+        case .social:
+            return "👥 参与了社交活动"
+        case .health:
+            return "🏥 关注了健康状况"
+        case .finance:
+            return "💰 管理了财务状况"
+        case .career:
+            return "💼 推进了职业发展"
+        case .relationship:
+            return "💑 维护了人际关系"
+        case .travel:
+            return "✈️ 体验了旅行经历"
+        case .skill:
+            return "🛠️ 学习了新技能"
+        case .project:
+            return "📋 推进了项目进展"
+        case .idea:
+            return "💡 记录了新想法"
+        case .challenge:
+            return "⚡ 克服了一个挑战"
+        case .gratitude:
+            return "🙏 记录了感恩的事"
+        case .custom:
+            return "⭐ 记录了自定义内容"
         }
     }
     
@@ -384,6 +416,38 @@ struct CommitCreationView: View {
             return "记录思考感悟"
         case .milestone:
             return "记录重要成就"
+        case .habit:
+            return "记录习惯养成"
+        case .exercise:
+            return "记录运动健身"
+        case .reading:
+            return "记录阅读心得"
+        case .creativity:
+            return "记录创意创作"
+        case .social:
+            return "记录社交活动"
+        case .health:
+            return "记录健康管理"
+        case .finance:
+            return "记录财务管理"
+        case .career:
+            return "记录职业发展"
+        case .relationship:
+            return "记录人际关系"
+        case .travel:
+            return "记录旅行体验"
+        case .skill:
+            return "记录技能学习"
+        case .project:
+            return "记录项目进展"
+        case .idea:
+            return "记录想法灵感"
+        case .challenge:
+            return "记录挑战克服"
+        case .gratitude:
+            return "记录感恩感谢"
+        case .custom:
+            return "记录自定义内容"
         }
     }
     
@@ -430,6 +494,6 @@ struct CommitCreationView: View {
     // Create repository
     let repository = SwiftDataCommitRepository(modelContext: context)
     
-    CommitCreationView(branch: branch, commitRepository: repository)
+    CommitCreationView(branch: branch, commitRepository: repository, modelContext: context)
         .modelContainer(container)
 }

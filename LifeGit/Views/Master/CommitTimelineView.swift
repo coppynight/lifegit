@@ -90,6 +90,7 @@ struct CommitTimelineDaySection: View {
 /// Individual commit row in the timeline
 struct CommitTimelineRow: View {
     let commit: Commit
+    @State private var isGlowing = false
     
     private let timeFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -99,20 +100,66 @@ struct CommitTimelineRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Commit type icon
-            Image(systemName: commitTypeIcon)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(commitTypeColor)
-                .frame(width: 24, height: 24)
-                .background(commitTypeColor.opacity(0.1))
-                .cornerRadius(6)
+            // Commit type icon with special effects for merge commits
+            ZStack {
+                // Glow effect for merge commits
+                if isMergeCommit {
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [commitTypeColor.opacity(0.6), .clear],
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: 20
+                            )
+                        )
+                        .frame(width: 40, height: 40)
+                        .scaleEffect(isGlowing ? 1.3 : 1.0)
+                        .opacity(isGlowing ? 0.8 : 0.4)
+                        .animation(
+                            .easeInOut(duration: 2.0)
+                            .repeatForever(autoreverses: true),
+                            value: isGlowing
+                        )
+                }
+                
+                // Main icon background
+                Circle()
+                    .fill(
+                        isMergeCommit
+                            ? LinearGradient(
+                                colors: [commitTypeColor, commitTypeColor.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            : LinearGradient(
+                                colors: [commitTypeColor.opacity(0.1), commitTypeColor.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                    )
+                    .frame(width: 24, height: 24)
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                isMergeCommit ? Color.white : Color.clear,
+                                lineWidth: isMergeCommit ? 2 : 0
+                            )
+                    )
+                
+                // Icon
+                Image(systemName: commitTypeIcon)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(isMergeCommit ? .white : commitTypeColor)
+            }
             
             // Commit content
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(commit.message)
-                        .font(.system(size: 15, weight: .medium))
+                        .font(.system(size: 15, weight: isMergeCommit ? .semibold : .medium))
                         .lineLimit(2)
+                        .foregroundColor(isMergeCommit ? commitTypeColor : .primary)
                     
                     Spacer()
                     
@@ -121,7 +168,20 @@ struct CommitTimelineRow: View {
                         .foregroundColor(.secondary)
                 }
                 
-                // Additional content is already included in the message
+                // Merge commit special indicator
+                if isMergeCommit {
+                    HStack {
+                        Image(systemName: "arrow.triangle.merge")
+                            .font(.system(size: 10))
+                        Text("目标合并")
+                            .font(.system(size: 11, weight: .medium))
+                    }
+                    .foregroundColor(commitTypeColor)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(commitTypeColor.opacity(0.1))
+                    .cornerRadius(4)
+                }
                 
                 // Branch info if not master
                 if let branch = commit.branch, !branch.isMaster {
@@ -143,8 +203,30 @@ struct CommitTimelineRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6).opacity(0.5))
+        .background(
+            isMergeCommit
+                ? commitTypeColor.opacity(0.05)
+                : Color(.systemGray6).opacity(0.5)
+        )
         .cornerRadius(8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(
+                    isMergeCommit ? commitTypeColor.opacity(0.3) : Color.clear,
+                    lineWidth: isMergeCommit ? 1 : 0
+                )
+        )
+        .onAppear {
+            if isMergeCommit {
+                isGlowing = true
+            }
+        }
+    }
+    
+    // MARK: - Computed Properties
+    
+    private var isMergeCommit: Bool {
+        return commit.type == .milestone && commit.message.contains("合并")
     }
     
     // MARK: - Computed Properties
@@ -159,20 +241,43 @@ struct CommitTimelineRow: View {
             return "lightbulb.fill"
         case .milestone:
             return "flag.fill"
+        case .habit:
+            return "repeat.circle.fill"
+        case .exercise:
+            return "figure.run.circle.fill"
+        case .reading:
+            return "book.circle.fill"
+        case .creativity:
+            return "paintbrush.fill"
+        case .social:
+            return "person.2.fill"
+        case .health:
+            return "heart.fill"
+        case .finance:
+            return "dollarsign.circle.fill"
+        case .career:
+            return "briefcase.fill"
+        case .relationship:
+            return "heart.circle.fill"
+        case .travel:
+            return "airplane.circle.fill"
+        case .skill:
+            return "wrench.and.screwdriver.fill"
+        case .project:
+            return "folder.fill"
+        case .idea:
+            return "lightbulb.circle.fill"
+        case .challenge:
+            return "bolt.fill"
+        case .gratitude:
+            return "hands.sparkles.fill"
+        case .custom:
+            return "star.fill"
         }
     }
     
     private var commitTypeColor: Color {
-        switch commit.type {
-        case .taskComplete:
-            return .green
-        case .learning:
-            return .blue
-        case .reflection:
-            return .orange
-        case .milestone:
-            return .purple
-        }
+        return commit.type.color
     }
 }
 

@@ -8,13 +8,21 @@ class CommitManager: ObservableObject {
     @Published var isCreating = false
     @Published var isLoading = false
     @Published var error: CommitManagerError?
+    @Published var preferredTypes: [CommitType] = []
+    @Published var customTypeConfigs: [CommitTypeConfig] = []
     
     // MARK: - Private Properties
     private let commitRepository: CommitRepository
+    private let modelContext: ModelContext
+    private lazy var analytics: CommitTypeAnalytics = {
+        CommitTypeAnalytics(modelContext: modelContext)
+    }()
     
     // MARK: - Initialization
-    init(commitRepository: CommitRepository) {
+    init(commitRepository: CommitRepository, modelContext: ModelContext) {
         self.commitRepository = commitRepository
+        self.modelContext = modelContext
+        loadUserPreferences()
     }
     
     // MARK: - Commit Creation
@@ -235,7 +243,7 @@ class CommitManager: ObservableObject {
     /// Get commit statistics for a branch
     /// - Parameter branchId: Branch ID to get statistics for
     /// - Returns: Commit statistics
-    func getCommitStatistics(for branchId: UUID) async throws -> CommitStatistics {
+    func getCommitStatistics(for branchId: UUID) async throws -> CommitManagerStatistics {
         do {
             let allCommits = try await commitRepository.findByBranchId(branchId)
             
@@ -256,7 +264,7 @@ class CommitManager: ObservableObject {
             
             let mostActiveDay = dayOfWeekCounts.max(by: { $0.value < $1.value })?.key ?? 1
             
-            return CommitStatistics(
+            return CommitManagerStatistics(
                 totalCommits: allCommits.count,
                 taskCompleteCount: taskCompleteCount,
                 learningCount: learningCount,
@@ -305,6 +313,131 @@ class CommitManager: ObservableObject {
     }
     
     // MARK: - Helper Methods
+    // MARK: - Commit Type Management
+    
+    /// Get user's preferred commit types
+    func getPreferredCommitTypes() -> [CommitType] {
+        if preferredTypes.isEmpty {
+            return analytics.getRecommendedTypes()
+        }
+        return preferredTypes
+    }
+    
+    /// Update user's preferred commit types
+    func updatePreferredTypes(_ types: [CommitType]) {
+        preferredTypes = types
+        saveUserPreferences()
+    }
+    
+    /// Get commit type analytics
+    func getCommitTypeAnalytics(for commits: [Commit]) -> CommitTypeAnalytics {
+        analytics.analyzeCommitTypes(for: commits)
+        return analytics
+    }
+    
+    /// Get personalized suggestions for commit types
+    func getPersonalizedSuggestions() -> [CommitTypeSuggestion] {
+        return analytics.generatePersonalizedSuggestions()
+    }
+    
+    /// Get commit pattern analysis
+    func getCommitPatternAnalysis() -> CommitPatternAnalysis {
+        return analytics.analyzeCommitPatterns()
+    }
+    
+    // MARK: - Custom Type Management
+    
+    /// Add a custom commit type configuration
+    func addCustomTypeConfig(_ config: CommitTypeConfig) {
+        customTypeConfigs.append(config)
+        saveUserPreferences()
+    }
+    
+    /// Update a custom commit type configuration
+    func updateCustomTypeConfig(_ config: CommitTypeConfig) {
+        if let index = customTypeConfigs.firstIndex(where: { $0.id == config.id }) {
+            customTypeConfigs[index] = config
+            saveUserPreferences()
+        }
+    }
+    
+    /// Remove a custom commit type configuration
+    func removeCustomTypeConfig(_ config: CommitTypeConfig) {
+        customTypeConfigs.removeAll { $0.id == config.id }
+        saveUserPreferences()
+    }
+    
+    /// Get all available commit types (built-in + custom)
+    func getAllAvailableTypes() -> [CommitTypeConfig] {
+        let builtInTypes = CommitType.allCases.map { type in
+            CommitTypeConfig(
+                type: type,
+                displayName: type.displayName,
+                emoji: type.emoji,
+                color: type.color,
+                description: type.description,
+                isEnabled: preferredTypes.contains(type),
+                isCustom: false
+            )
+        }
+        
+        return builtInTypes + customTypeConfigs
+    }
+    
+    // MARK: - Enhanced Statistics
+    
+    /// Get enhanced commit statistics with type analysis
+    func getEnhancedCommitStatistics(for branchId: UUID) async throws -> EnhancedCommitStatistics {
+        do {
+            let allCommits = try await commitRepository.findByBranchId(branchId)
+            let basicStats = try await getCommitStatistics(for: branchId)
+            
+            analytics.analyzeCommitTypes(for: allCommits)
+            let patterns = analytics.analyzeCommitPatterns()
+            
+            return EnhancedCommitStatistics(
+                basicStatistics: basicStats,
+                typeStatistics: analytics.typeStatistics,
+                categoryStatistics: analytics.categoryStatistics,
+                patternAnalysis: patterns,
+                suggestions: analytics.generatePersonalizedSuggestions()
+            )
+            
+        } catch {
+            throw CommitManagerError.statisticsCalculationFailed(error.localizedDescription)
+        }
+    }
+    
+    // MARK: - User Preferences
+    
+    private func loadUserPreferences() {
+        // Load preferred types
+        if let data = UserDefaults.standard.data(forKey: "preferredCommitTypes"),
+           let types = try? JSONDecoder().decode([CommitType].self, from: data) {
+            preferredTypes = types
+        } else {
+            preferredTypes = [.taskComplete, .learning, .reflection, .milestone]
+        }
+        
+        // Load custom type configurations
+        if let data = UserDefaults.standard.data(forKey: "customCommitTypeConfigs"),
+           let configs = try? JSONDecoder().decode([CommitTypeConfig].self, from: data) {
+            customTypeConfigs = configs
+        }
+    }
+    
+    private func saveUserPreferences() {
+        // Save preferred types
+        if let data = try? JSONEncoder().encode(preferredTypes) {
+            UserDefaults.standard.set(data, forKey: "preferredCommitTypes")
+        }
+        
+        // Save custom type configurations
+        if let data = try? JSONEncoder().encode(customTypeConfigs) {
+            UserDefaults.standard.set(data, forKey: "customCommitTypeConfigs")
+        }
+    }
+    
     /// Get default message for commit type
     private func getDefaultMessage(for type: CommitType) -> String {
         switch type {
@@ -316,6 +449,38 @@ class CommitManager: ObservableObject {
             return "🌟 记录了一些思考"
         case .milestone:
             return "🏆 达成了一个里程碑"
+        case .habit:
+            return "🔄 坚持了一个好习惯"
+        case .exercise:
+            return "💪 完成了运动锻炼"
+        case .reading:
+            return "📖 阅读了有价值的内容"
+        case .creativity:
+            return "🎨 进行了创意创作"
+        case .social:
+            return "👥 参与了社交活动"
+        case .health:
+            return "🏥 关注了健康管理"
+        case .finance:
+            return "💰 处理了财务事务"
+        case .career:
+            return "💼 推进了职业发展"
+        case .relationship:
+            return "💑 维护了人际关系"
+        case .travel:
+            return "✈️ 体验了旅行见闻"
+        case .skill:
+            return "🛠️ 学习了新技能"
+        case .project:
+            return "📋 推进了项目进展"
+        case .idea:
+            return "💡 记录了新想法"
+        case .challenge:
+            return "⚡ 克服了一个挑战"
+        case .gratitude:
+            return "🙏 记录了感恩的事情"
+        case .custom:
+            return "⭐ 记录了自定义内容"
         }
     }
     
@@ -328,7 +493,7 @@ class CommitManager: ObservableObject {
 // MARK: - Supporting Types
 
 /// Commit statistics data
-struct CommitStatistics {
+struct CommitManagerStatistics {
     let totalCommits: Int
     let taskCompleteCount: Int
     let learningCount: Int
@@ -347,6 +512,27 @@ struct CommitStatistics {
     
     var averageCommitsPerWeek: Double {
         commitFrequency * 7.0
+    }
+}
+
+/// Enhanced commit statistics with type analysis
+struct EnhancedCommitStatistics {
+    let basicStatistics: CommitManagerStatistics
+    let typeStatistics: [CommitTypeStatistic]
+    let categoryStatistics: [CommitCategoryStatistic]
+    let patternAnalysis: CommitPatternAnalysis
+    let suggestions: [CommitTypeSuggestion]
+    
+    var mostUsedType: CommitType? {
+        typeStatistics.first?.type
+    }
+    
+    var diversityScore: Double {
+        patternAnalysis.diversityScore
+    }
+    
+    var currentStreak: Int {
+        patternAnalysis.currentStreak
     }
 }
 

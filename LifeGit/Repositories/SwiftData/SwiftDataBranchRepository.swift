@@ -4,7 +4,7 @@ import SwiftData
 /// SwiftData implementation of BranchRepository
 @MainActor
 class SwiftDataBranchRepository: BranchRepository {
-    private let modelContext: ModelContext
+    let modelContext: ModelContext
     
     init(modelContext: ModelContext) {
         self.modelContext = modelContext

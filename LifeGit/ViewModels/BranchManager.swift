@@ -16,6 +16,7 @@ class BranchManager: ObservableObject {
     private let commitRepository: CommitRepository
     private let taskPlanService: TaskPlanService
     private let aiErrorHandler: AIServiceErrorHandler
+    private let versionManager: VersionManager
     
     // MARK: - Initialization
     init(
@@ -23,13 +24,15 @@ class BranchManager: ObservableObject {
         taskPlanRepository: TaskPlanRepository,
         commitRepository: CommitRepository,
         taskPlanService: TaskPlanService,
-        aiErrorHandler: AIServiceErrorHandler
+        aiErrorHandler: AIServiceErrorHandler,
+        versionManager: VersionManager
     ) {
         self.branchRepository = branchRepository
         self.taskPlanRepository = taskPlanRepository
         self.commitRepository = commitRepository
         self.aiErrorHandler = aiErrorHandler
         self.taskPlanService = taskPlanService
+        self.versionManager = versionManager
     }
     
     // MARK: - Branch Creation
@@ -238,6 +241,11 @@ class BranchManager: ObservableObject {
                 throw BranchManagerError.masterBranchNotFound("Master branch not found")
             }
             
+            // Get user for version upgrade evaluation
+            guard let user = try await getCurrentUser() else {
+                throw BranchManagerError.userNotFound("User not found")
+            }
+            
             // Create merge commit in master branch
             let mergeCommit = Commit(
                 message: "合并目标: \(branch.name)",
@@ -252,10 +260,23 @@ class BranchManager: ObservableObject {
             branch.completedAt = Date()
             try await branchRepository.update(branch)
             
+            // Evaluate for version upgrade
+            await versionManager.evaluateBranchForVersionUpgrade(branch, user: user)
+            
         } catch {
             self.error = BranchManagerError.mergeFailed(error.localizedDescription)
             throw error
         }
+    }
+    
+    // MARK: - Helper Methods
+    /// Get current user (helper method)
+    private func getCurrentUser() async throws -> User? {
+        // This would typically be injected or retrieved from a user service
+        // For now, we'll implement a basic fetch
+        let userDescriptor = FetchDescriptor<User>()
+        let users = try await branchRepository.modelContext.fetch(userDescriptor)
+        return users.first
     }
     
     // MARK: - Branch Abandonment
@@ -308,7 +329,7 @@ class BranchManager: ObservableObject {
     /// Get branch statistics
     /// - Parameter branch: Branch to get statistics for
     /// - Returns: Branch statistics
-    func getBranchStatistics(_ branch: Branch) async throws -> BranchStatistics {
+    func getBranchStatistics(_ branch: Branch) async throws -> BranchManagerStatistics {
         do {
             let commitCount = try await commitRepository.getCommitCount(for: branch.id)
             let taskPlan = try await taskPlanRepository.findByBranchId(branch.id)
@@ -317,7 +338,7 @@ class BranchManager: ObservableObject {
             let totalTasks = taskPlan?.tasks.count ?? 0
             let progress = totalTasks > 0 ? Double(completedTasks) / Double(totalTasks) : 0.0
             
-            return BranchStatistics(
+            return BranchManagerStatistics(
                 commitCount: commitCount,
                 totalTasks: totalTasks,
                 completedTasks: completedTasks,
@@ -339,7 +360,7 @@ class BranchManager: ObservableObject {
 // MARK: - Supporting Types
 
 /// Branch statistics data
-struct BranchStatistics {
+struct BranchManagerStatistics {
     let commitCount: Int
     let totalTasks: Int
     let completedTasks: Int
@@ -359,6 +380,7 @@ enum BranchManagerError: Error, LocalizedError {
     case masterBranchNotFound(String)
     case noTaskPlan(String)
     case statisticsCalculationFailed(String)
+    case userNotFound(String)
     
     var errorDescription: String? {
         switch self {
@@ -382,6 +404,8 @@ enum BranchManagerError: Error, LocalizedError {
             return "无任务计划: \(message)"
         case .statisticsCalculationFailed(let message):
             return "统计计算失败: \(message)"
+        case .userNotFound(let message):
+            return "用户未找到: \(message)"
         }
     }
 }

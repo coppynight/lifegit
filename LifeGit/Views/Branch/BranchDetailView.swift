@@ -10,6 +10,7 @@ struct BranchDetailView: View {
     @State private var isShowingTaskPlanGeneration = false
     @State private var isShowingBranchActions = false
     @State private var selectedTab: BranchDetailTab = .overview
+    @State private var reviewService: BranchReviewService?
     
     init(branch: Branch) {
         self.branch = branch
@@ -39,6 +40,9 @@ struct BranchDetailView: View {
                 
                 commitsTabView
                     .tag(BranchDetailTab.commits)
+                
+                reviewTabView
+                    .tag(BranchDetailTab.review)
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
         }
@@ -158,6 +162,33 @@ struct BranchDetailView: View {
         }
     }
     
+    // MARK: - Review Tab
+    
+    private var reviewTabView: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                if let reviewService = reviewService {
+                    BranchReviewManagementView(branch: branch, reviewService: reviewService)
+                } else {
+                    Text("正在初始化复盘服务...")
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(16)
+        }
+        .onAppear {
+            if reviewService == nil {
+                initializeReviewService()
+            }
+        }
+    }
+    
+    private func initializeReviewService() {
+        // In a real app, this would be injected via dependency injection
+        let deepseekClient = DeepseekR1Client(apiKey: "your-api-key-here")
+        reviewService = BranchReviewService(deepseekClient: deepseekClient, modelContext: modelContext)
+    }
+    
     // MARK: - Supporting Views
     
     private var branchStatusIndicator: some View {
@@ -219,21 +250,21 @@ struct BranchDetailView: View {
             GridItem(.flexible()),
             GridItem(.flexible())
         ], spacing: 12) {
-            StatCard(
+            BranchStatCard(
                 title: "提交数",
                 value: "\(commits.count)",
                 icon: "doc.text.fill",
                 color: .blue
             )
             
-            StatCard(
+            BranchStatCard(
                 title: "活跃天数",
                 value: "\(activeDays)",
                 icon: "calendar.badge.clock",
                 color: .green
             )
             
-            StatCard(
+            BranchStatCard(
                 title: "创建时间",
                 value: daysAgo,
                 icon: "clock.fill",
@@ -476,7 +507,7 @@ struct BranchDetailView: View {
 
 // MARK: - Supporting Views
 
-struct StatCard: View {
+struct BranchStatCard: View {
     let title: String
     let value: String
     let icon: String
@@ -561,6 +592,38 @@ struct CommitRowView: View {
             return "lightbulb.fill"
         case .milestone:
             return "flag.fill"
+        case .habit:
+            return "repeat.circle.fill"
+        case .exercise:
+            return "figure.run"
+        case .reading:
+            return "book.closed.fill"
+        case .creativity:
+            return "paintbrush.fill"
+        case .social:
+            return "person.2.fill"
+        case .health:
+            return "heart.fill"
+        case .finance:
+            return "dollarsign.circle.fill"
+        case .career:
+            return "briefcase.fill"
+        case .relationship:
+            return "heart.circle.fill"
+        case .travel:
+            return "airplane"
+        case .skill:
+            return "wrench.fill"
+        case .project:
+            return "folder.fill"
+        case .idea:
+            return "lightbulb.fill"
+        case .challenge:
+            return "bolt.fill"
+        case .gratitude:
+            return "hands.sparkles.fill"
+        case .custom:
+            return "star.fill"
         }
     }
     
@@ -574,6 +637,38 @@ struct CommitRowView: View {
             return .orange
         case .milestone:
             return .purple
+        case .habit:
+            return .cyan
+        case .exercise:
+            return .red
+        case .reading:
+            return .brown
+        case .creativity:
+            return .pink
+        case .social:
+            return .yellow
+        case .health:
+            return .mint
+        case .finance:
+            return .green
+        case .career:
+            return .indigo
+        case .relationship:
+            return .pink
+        case .travel:
+            return .teal
+        case .skill:
+            return .blue
+        case .project:
+            return .gray
+        case .idea:
+            return .yellow
+        case .challenge:
+            return .red
+        case .gratitude:
+            return .purple
+        case .custom:
+            return .secondary
         }
     }
 }
@@ -581,13 +676,14 @@ struct CommitRowView: View {
 // MARK: - Supporting Types
 
 enum BranchDetailTab: CaseIterable {
-    case overview, taskPlan, commits
+    case overview, taskPlan, commits, review
     
     var displayName: String {
         switch self {
         case .overview: return "概览"
         case .taskPlan: return "任务计划"
         case .commits: return "提交记录"
+        case .review: return "复盘报告"
         }
     }
 }

@@ -188,32 +188,34 @@ extension View {
     }
 }
 
-#Preview {
-    struct ToastPreview: View {
-        @StateObject private var toastManager = ToastManager()
-        
-        var body: some View {
-            VStack(spacing: DesignSystem.Spacing.lg) {
-                PrimaryButton(title: "显示成功消息") {
-                    toastManager.showSuccess("操作成功完成！")
-                }
-                
-                PrimaryButton(title: "显示错误消息") {
-                    toastManager.showError("操作失败，请重试")
-                }
-                
-                PrimaryButton(title: "显示警告消息") {
-                    toastManager.showWarning("请注意检查输入内容")
-                }
-                
-                PrimaryButton(title: "显示信息消息") {
-                    toastManager.showInfo("这是一条信息提示")
-                }
-            }
-            .padding()
-            .toast(toastManager)
-        }
-    }
+private struct ToastPreview: View {
+    @StateObject private var toastManager = ToastManager()
     
-    return ToastPreview()
+    var body: some View {
+        VStack(spacing: DesignSystem.Spacing.lg) {
+            PrimaryButton(title: "显示成功消息") {
+                toastManager.showSuccess("操作成功完成！")
+            }
+            
+            PrimaryButton(title: "显示错误消息") {
+                toastManager.showError("操作失败，请重试")
+            }
+            
+            PrimaryButton(title: "显示警告消息") {
+                toastManager.showWarning("请注意检查输入内容")
+            }
+            
+            PrimaryButton(title: "显示信息消息") {
+                toastManager.showInfo("这是一条信息提示")
+            }
+        }
+        .padding()
+        .toast(toastManager)
+    }
+}
+
+struct ToastView_Previews: PreviewProvider {
+    static var previews: some View {
+        ToastPreview()
+    }
 }

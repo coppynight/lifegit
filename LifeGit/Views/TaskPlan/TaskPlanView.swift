@@ -65,7 +65,7 @@ struct TaskPlanView: View {
         .task {
             await loadTaskPlan()
         }
-        .onChange(of: taskPlanManager.error) { error in
+        .onChange(of: taskPlanManager.error) { _, error in
             showingError = error != nil
         }
     }

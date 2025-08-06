@@ -18,6 +18,9 @@ class AppStateManager: ObservableObject {
     @Published var preferredStartupView: StartupView = .intelligent
     @Published var lastActiveDate = Date()
     
+    // Smart homepage manager
+    @Published var smartHomepageManager: SmartHomepageManager?
+    
     // MARK: - Internal Properties (for extensions)
     internal var modelContext: ModelContext?
     internal var branchRepository: BranchRepository?
@@ -39,11 +42,14 @@ class AppStateManager: ObservableObject {
     func initialize(modelContext: ModelContext) {
         self.modelContext = modelContext
         self.branchRepository = SwiftDataBranchRepository(modelContext: modelContext)
+        self.smartHomepageManager = SmartHomepageManager(modelContext: modelContext)
         
         Task {
             await loadInitialData()
         }
     }
+    
+
     
     // MARK: - Initial Data Loading
     func loadInitialData() async {
@@ -150,19 +156,12 @@ class AppStateManager: ObservableObject {
     
     /// Intelligent startup branch selection
     internal func getIntelligentStartupBranch() async throws -> Branch? {
-        guard let branchRepository = branchRepository else { return nil }
-        
-        // Check if user just completed a goal (show master to celebrate)
-        let lastActiveDate = userDefaults.object(forKey: UserDefaultsKeys.lastActiveDate) as? Date ?? Date.distantPast
-        let daysSinceLastActive = Calendar.current.dateComponents([.day], from: lastActiveDate, to: Date()).day ?? 0
-        
-        if daysSinceLastActive > 7 {
-            // User hasn't been active for a week, show master branch
-            return try await branchRepository.findMasterBranch()
-        } else {
-            // Show most active branch
+        guard let smartHomepageManager = smartHomepageManager else {
             return try await getMostActiveBranch()
         }
+        
+        // Use smart homepage manager for intelligent recommendation
+        return await smartHomepageManager.getRecommendedBranch()
     }
     
     // MARK: - Branch Management
@@ -170,6 +169,11 @@ class AppStateManager: ObservableObject {
         currentBranch = branch
         saveCurrentBranchId()
         updateLastActiveDate()
+        
+        // Record user behavior for smart homepage learning
+        smartHomepageManager?.recordUserBehavior(
+            UserBehavior(type: .branchSwitch, branchId: branch.id)
+        )
     }
     
     func refreshBranches() async {

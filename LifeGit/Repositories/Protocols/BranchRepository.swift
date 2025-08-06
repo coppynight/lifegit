@@ -3,6 +3,8 @@ import SwiftData
 
 /// Protocol defining the interface for branch data operations
 protocol BranchRepository {
+    /// The model context for data operations
+    var modelContext: ModelContext { get }
     /// Create a new branch
     /// - Parameter branch: The branch to create
     /// - Throws: DataError if creation fails

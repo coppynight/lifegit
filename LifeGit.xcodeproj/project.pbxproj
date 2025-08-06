@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8B41F6832DEDD23B001A66F9 /* LifeGitFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 8B41F6822DEDD23B001A66F9 /* LifeGitFeature */; };
-		8B41F6852DEDD25C001A66F9 /* LifeGitFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 8B41F6842DEDD25C001A66F9 /* LifeGitFeature */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,7 +63,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8B41F6852DEDD25C001A66F9 /* LifeGitFeature in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,7 +70,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8B41F6832DEDD23B001A66F9 /* LifeGitFeature in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,9 +123,6 @@
 				8BD71C052DEE41D800CEDD92 /* Config */,
 			);
 			name = LifeGit;
-			packageProductDependencies = (
-				8B41F6842DEDD25C001A66F9 /* LifeGitFeature */,
-			);
 			productName = LifeGit;
 			productReference = 8B41F6452DEDD0D5001A66F9 /* LifeGit.app */;
 			productType = "com.apple.product-type.application";
@@ -469,16 +462,7 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCSwiftPackageProductDependency section */
-		8B41F6822DEDD23B001A66F9 /* LifeGitFeature */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = LifeGitFeature;
-		};
-		8B41F6842DEDD25C001A66F9 /* LifeGitFeature */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = LifeGitFeature;
-		};
-/* End XCSwiftPackageProductDependency section */
+
 	};
 	rootObject = 8B41F63D2DEDD0D5001A66F9 /* Project object */;
 }

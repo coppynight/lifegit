@@ -39,7 +39,7 @@ struct NetworkStatusView: View {
                 .onTapGesture {
                     showingDetails = true
                 }
-            } else if networkManager.isExpensive {
+            } else if networkManager.connectionType == .cellular {
                 // Expensive network warning
                 HStack(spacing: 8) {
                     Image(systemName: "antenna.radiowaves.left.and.right")
@@ -121,8 +121,8 @@ struct NetworkStatusDetailView: View {
                         NetworkDetailRow(
                             icon: "antenna.radiowaves.left.and.right",
                             title: "连接类型",
-                            value: networkManager.isExpensive ? "移动数据" : "WiFi",
-                            color: networkManager.isExpensive ? .orange : .blue
+                            value: networkManager.connectionType == .cellular ? "移动数据" : "WiFi",
+                            color: networkManager.connectionType == .cellular ? .orange : .blue
                         )
                         
                         NetworkDetailRow(
@@ -189,7 +189,7 @@ struct NetworkStatusDetailView: View {
     private var statusIcon: String {
         if !networkManager.isConnected {
             return "wifi.slash"
-        } else if networkManager.isExpensive {
+        } else if networkManager.connectionType == .cellular {
             return "antenna.radiowaves.left.and.right"
         } else {
             return "wifi"
@@ -199,7 +199,7 @@ struct NetworkStatusDetailView: View {
     private var statusColor: Color {
         if !networkManager.isConnected {
             return .red
-        } else if networkManager.isExpensive {
+        } else if networkManager.connectionType == .cellular {
             return .orange
         } else {
             return .green
@@ -209,7 +209,7 @@ struct NetworkStatusDetailView: View {
     private var statusTitle: String {
         if !networkManager.isConnected {
             return "网络未连接"
-        } else if networkManager.isExpensive {
+        } else if networkManager.connectionType == .cellular {
             return "使用移动数据"
         } else {
             return "网络连接正常"
@@ -219,7 +219,7 @@ struct NetworkStatusDetailView: View {
     private var statusDescription: String {
         if !networkManager.isConnected {
             return "当前设备未连接到网络，AI功能将不可用"
-        } else if networkManager.isExpensive {
+        } else if networkManager.connectionType == .cellular {
             return "正在使用移动数据，AI功能可能产生流量费用"
         } else {
             return "网络连接稳定，所有功能正常可用"
@@ -229,7 +229,7 @@ struct NetworkStatusDetailView: View {
     private var networkQualityText: String {
         // This would be based on actual network quality metrics
         if networkManager.isConnected {
-            return networkManager.isExpensive ? "良好" : "优秀"
+            return networkManager.connectionType == .cellular ? "良好" : "优秀"
         } else {
             return "无连接"
         }
@@ -237,7 +237,7 @@ struct NetworkStatusDetailView: View {
     
     private var networkQualityColor: Color {
         if networkManager.isConnected {
-            return networkManager.isExpensive ? .orange : .green
+            return networkManager.connectionType == .cellular ? .orange : .green
         } else {
             return .red
         }
@@ -251,7 +251,7 @@ struct NetworkStatusDetailView: View {
                 "您仍可以手动创建和管理任务",
                 "网络恢复后AI功能将自动可用"
             ]
-        } else if networkManager.isExpensive {
+        } else if networkManager.connectionType == .cellular {
             return [
                 "连接WiFi以节省流量费用",
                 "在设置中可关闭移动数据下的AI功能",

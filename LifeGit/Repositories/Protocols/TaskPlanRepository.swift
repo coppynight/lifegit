@@ -3,6 +3,8 @@ import SwiftData
 
 /// Protocol defining the interface for task plan data operations
 protocol TaskPlanRepository {
+    /// The model context for data operations
+    var modelContext: ModelContext { get }
     /// Create a new task plan
     /// - Parameter taskPlan: The task plan to create
     /// - Throws: DataError if creation fails

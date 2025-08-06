@@ -4,7 +4,7 @@ import SwiftData
 /// SwiftData implementation of TaskPlanRepository
 @MainActor
 class SwiftDataTaskPlanRepository: TaskPlanRepository {
-    private let modelContext: ModelContext
+    let modelContext: ModelContext
     
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
